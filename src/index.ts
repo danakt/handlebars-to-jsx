@@ -1,6 +1,6 @@
-import { preprocess }     from '@glimmer/syntax'
-import generate           from '@babel/generator'
-import { convertProgram } from './converter'
+import { preprocess }    from '@glimmer/syntax'
+import generate          from '@babel/generator'
+import { createProgram } from './expressions'
 
 /**
  * Compiles hbs code
@@ -8,7 +8,7 @@ import { convertProgram } from './converter'
 export const compile = (hbsCode: string) => {
   // generate
   const glimmerProgram = preprocess(hbsCode)
-  const babelAst = convertProgram(glimmerProgram)
+  const babelAst = createProgram(glimmerProgram)
 
   return generate(babelAst).code
 }

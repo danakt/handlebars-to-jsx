@@ -61,12 +61,28 @@ describe('element attributes', () => {
 
 describe('block statements', () => {
   test('should convert condition if-then ', () => {
-    expect(compile(`<div>{{#if variable}}<div/>{{/if}}</div>`)).toBe(`<div>{Boolean(variable) && <div />}</div>;`)
+    expect(compile('<div>{{#if variable}}<div/>{{/if}}</div>')).toBe('<div>{Boolean(variable) && <div />}</div>;')
   })
 
   test('should convert condition if-then-else ', () => {
-    expect(compile(`<div>{{#if variable}}<div/>{{else}}<span/>{{/if}}</div>`)).toBe(
-      `<div>{Boolean(variable) ? <div /> : <span />}</div>;`
+    expect(compile('<div>{{#if variable}}<div/>{{else}}<span/>{{/if}}</div>')).toBe(
+      '<div>{Boolean(variable) ? <div /> : <span />}</div>;'
+    )
+  })
+
+  test('should wrap multiple block children into fragment', () => {
+    expect(compile('<div>{{#if variable}}<div/><span/>{{/if}}</div>')).toBe(
+      '<div>{Boolean(variable) && <><div /><span /></>}</div>;'
+    )
+  })
+
+  test('should convert condition statement in root', () => {
+    expect(compile('{{#if variable}}<div/>{{else}}<span/>{{/if}}')).toBe('Boolean(variable) ? <div /> : <span />;')
+  })
+
+  test('each bock statement', () => {
+    expect(compile('<div>{{#each list}}<div id={{this.id}} />{{/each}}</div>')).toBe(
+      '<div>{list.map(item => <div id={item.id} />)</div>;'
     )
   })
 })
