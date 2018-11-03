@@ -9,3 +9,4 @@ package-lock.json
 *.temp
 DONTREADME.md
 *error.log
+*.bak
