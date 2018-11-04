@@ -27,7 +27,7 @@ describe('element values', () => {
   })
 })
 
-describe('attributes', () => {
+describe('element attributes', () => {
   test('should convert simple text attribute', () => {
     expect(compile('<div id="my-id" />')).toBe('<div id="my-id" />;')
   })
@@ -55,6 +55,18 @@ describe('attributes', () => {
     expect(compile('<div id="my {{variable}}" />')).toBe('<div id={"my " + variable} />;')
     expect(compile('<div id="two {{variables}} {{in.one.attribute}}" />')).toBe(
       '<div id={"two " + variables + " " + in.one.attribute} />;'
+    )
+  })
+})
+
+describe('block statements', () => {
+  test('should convert condition if-then ', () => {
+    expect(compile(`<div>{{#if variable}}<div/>{{/if}}</div>`)).toBe(`<div>{Boolean(variable) && <div />}</div>;`)
+  })
+
+  test('should convert condition if-then-else ', () => {
+    expect(compile(`<div>{{#if variable}}<div/>{{else}}<span/>{{/if}}</div>`)).toBe(
+      `<div>{Boolean(variable) ? <div /> : <span />}</div>;`
     )
   })
 })

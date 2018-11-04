@@ -5,11 +5,12 @@ import { AST as Glimmer }        from '@glimmer/syntax'
 import * as Babel                from '@babel/types'
 import * as isSelfClosing        from 'is-self-closing'
 import * as convertHTMLAttribute from 'react-attr-converter'
+import { resolveBlockStatement } from './blockStatements'
 
 /**
  * Converts HBS expression to JS-compatible expression
  */
-export const convertExpression = (statement: Glimmer.Statement): Babel.Expression => {
+export const convertStatement = (statement: Glimmer.Statement): Babel.Expression => {
   switch (statement.type) {
     case 'ElementNode': {
       return convertElement(statement)
@@ -20,7 +21,11 @@ export const convertExpression = (statement: Glimmer.Statement): Babel.Expressio
     }
 
     case 'MustacheStatement': {
-      return convertMustacheStatement(statement)
+      return convertExpression(statement.path)
+    }
+
+    case 'BlockStatement': {
+      return resolveBlockStatement(statement)
     }
 
     default: {
@@ -46,26 +51,24 @@ export const convertElementChild = (
 
     // If ig expression, create a expression container
     default: {
-      return Babel.jsxExpressionContainer(convertExpression(statement))
+      return Babel.jsxExpressionContainer(convertStatement(statement))
     }
   }
 }
 
 /**
- * Converts Mustache statement to Babel expression
+ * Converts Hbs expression to Babel expression
  */
-export const convertMustacheStatement = (
-  statement: Glimmer.MustacheStatement
+export const convertExpression = (
+  expression: Glimmer.Expression
 ): Babel.Literal | Babel.Identifier | Babel.MemberExpression => {
-  const path = statement.path
-
-  switch (path.type) {
+  switch (expression.type) {
     case 'PathExpression': {
-      return createMemberExpression(path.parts)
+      return createMemberExpression(expression.parts)
     }
 
     case 'BooleanLiteral': {
-      return Babel.booleanLiteral(path.value)
+      return Babel.booleanLiteral(expression.value)
     }
 
     case 'NullLiteral': {
@@ -73,11 +76,11 @@ export const convertMustacheStatement = (
     }
 
     case 'NumberLiteral': {
-      return Babel.numericLiteral(path.value)
+      return Babel.numericLiteral(expression.value)
     }
 
     case 'StringLiteral': {
-      return Babel.stringLiteral(path.value)
+      return Babel.stringLiteral(expression.value)
     }
 
     case 'UndefinedLiteral': {
@@ -109,17 +112,19 @@ export const createMemberExpression = (parts: string[]): Babel.Identifier | Babe
  * @param body List of Glimmer statements
  */
 export const convertChildren = (body: Glimmer.Statement[]): Babel.JSXElement['children'] =>
-  body
-    // Converting HBS statements to ES expression
-    .map(statement => convertElementChild(statement))
+  body.map(statement => convertElementChild(statement))
+
+/**
+ * Converts root children
+ */
+export const convertRootChildren = (body: Glimmer.Statement[]): Babel.Expression =>
+  body.length === 1 ? convertStatement(body[0]) : createFragment(convertChildren(body))
 
 /**
  * Creates program statement
  */
 export const convertProgram = (program: Glimmer.Program): Babel.Program => {
-  const expression: Babel.Expression
-    = program.body.length === 1 ? convertExpression(program.body[0]) : createFragment(convertChildren(program.body))
-  const body = [Babel.expressionStatement(expression)]
+  const body = [Babel.expressionStatement(convertRootChildren(program.body))]
 
   return Babel.program(body)
 }
@@ -141,10 +146,10 @@ export const createConcat = (parts: Glimmer.ConcatStatement['parts']): Babel.Bin
   return parts.reduce(
     (acc, item) => {
       if (acc == null) {
-        return convertExpression(item)
+        return convertStatement(item)
       }
 
-      return Babel.binaryExpression('+', acc, convertExpression(item))
+      return Babel.binaryExpression('+', acc, convertStatement(item))
     },
     null as null | Babel.Expression | Babel.BinaryExpression
   ) as Babel.BinaryExpression | Babel.Expression
@@ -169,7 +174,7 @@ export const convertAttribute = (attrNode: Glimmer.AttrNode): Babel.JSXAttribute
     }
 
     case 'MustacheStatement': {
-      return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(convertMustacheStatement(value)))
+      return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(convertExpression(value.path)))
     }
 
     case 'ConcatStatement': {
