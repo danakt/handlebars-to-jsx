@@ -1,15 +1,15 @@
 /**
  * Utils for converting Glimmer AST (Handlebars) to Babel AST (EcmaScript)
  */
-import { AST }                   from '@glimmer/syntax'
+import { AST as Glimmer }        from '@glimmer/syntax'
 import * as Babel                from '@babel/types'
 import * as isSelfClosing        from 'is-self-closing'
 import * as convertHTMLAttribute from 'react-attr-converter'
 
 /**
- * Detects expression type and converts to appropriate jsx expression
+ * Converts HBS expression to JS-compatible expression
  */
-export const convertExpression = (statement: AST.Statement): Babel.Expression => {
+export const convertExpression = (statement: Glimmer.Statement): Babel.Expression => {
   switch (statement.type) {
     case 'ElementNode': {
       return convertElement(statement)
@@ -24,15 +24,39 @@ export const convertExpression = (statement: AST.Statement): Babel.Expression =>
     }
 
     default: {
-      throw new Error('Unexpected statement')
+      throw new Error('Unexpected expression')
     }
   }
 }
 
 /**
- * Converts mustache statement
+ * Converts the child element of Handlebars node to JSX-compatible child element
  */
-export const convertMustacheStatement = (statement: AST.MustacheStatement) => {
+export const convertElementChild = (
+  statement: Glimmer.Statement
+): Babel.JSXText | Babel.JSXElement | Babel.JSXExpressionContainer => {
+  switch (statement.type) {
+    case 'ElementNode': {
+      return convertElement(statement)
+    }
+
+    case 'TextNode': {
+      return Babel.jsxText(statement.chars)
+    }
+
+    // If ig expression, create a expression container
+    default: {
+      return Babel.jsxExpressionContainer(convertExpression(statement))
+    }
+  }
+}
+
+/**
+ * Converts Mustache statement to Babel expression
+ */
+export const convertMustacheStatement = (
+  statement: Glimmer.MustacheStatement
+): Babel.Literal | Babel.Identifier | Babel.MemberExpression => {
   const path = statement.path
 
   switch (path.type) {
@@ -81,26 +105,23 @@ export const createMemberExpression = (parts: string[]): Babel.Identifier | Babe
 }
 
 /**
- * Creates children list from js expression
+ * Converts child statements of element to JSX-compatible expressions
+ * @param body List of Glimmer statements
  */
-export const createJSXItem = (expressions: Babel.Expression[]): Babel.JSXElement['children'] =>
-  expressions.map(
-    expression =>
-      expression.type === 'JSXElement' || expression.type === 'JSXFragment'
-        ? expression
-        : Babel.jsxExpressionContainer(expression)
-  )
+export const convertChildren = (body: Glimmer.Statement[]): Babel.JSXElement['children'] =>
+  body
+    // Converting HBS statements to ES expression
+    .map(statement => convertElementChild(statement))
 
 /**
  * Creates program statement
  */
-export const convertProgram = (program: AST.Program) => {
-  const expression
-    = program.body.length === 1
-      ? convertExpression(program.body[0])
-      : createFragment(createJSXItem(program.body.map(statement => convertExpression(statement))))
+export const convertProgram = (program: Glimmer.Program): Babel.Program => {
+  const expression: Babel.Expression
+    = program.body.length === 1 ? convertExpression(program.body[0]) : createFragment(convertChildren(program.body))
+  const body = [Babel.expressionStatement(expression)]
 
-  return Babel.program([Babel.expressionStatement(expression)])
+  return Babel.program(body)
 }
 
 /**
@@ -116,7 +137,7 @@ export const createFragment = (children: Babel.JSXFragment['children']) => {
 /**
  * Creates attribute value concatenation
  */
-export const createConcat = (parts: AST.ConcatStatement['parts']): Babel.BinaryExpression => {
+export const createConcat = (parts: Glimmer.ConcatStatement['parts']): Babel.BinaryExpression | Babel.Expression => {
   return parts.reduce(
     (acc, item) => {
       if (acc == null) {
@@ -126,13 +147,13 @@ export const createConcat = (parts: AST.ConcatStatement['parts']): Babel.BinaryE
       return Babel.binaryExpression('+', acc, convertExpression(item))
     },
     null as null | Babel.Expression | Babel.BinaryExpression
-  ) as Babel.BinaryExpression
+  ) as Babel.BinaryExpression | Babel.Expression
 }
 
 /**
  * Coverts AttrNode to JSXAttribute
  */
-export const convertAttribute = (attrNode: AST.AttrNode): Babel.JSXAttribute | null => {
+export const convertAttribute = (attrNode: Glimmer.AttrNode): Babel.JSXAttribute | null => {
   // Unsupported attribute
   if (!/^[_\-A-z0-9]+$/.test(attrNode.name)) {
     return null
@@ -166,12 +187,16 @@ export const convertAttribute = (attrNode: AST.AttrNode): Babel.JSXAttribute | n
 /**
  * Converts ElementNode to JSXElement
  */
-export const convertElement = (node: AST.ElementNode): Babel.JSXElement => {
+export const convertElement = (node: Glimmer.ElementNode): Babel.JSXElement => {
   const tagName = Babel.jsxIdentifier(node.tag)
   const attributes = node.attributes.map(item => convertAttribute(item)).filter(Boolean) as Babel.JSXAttribute[]
   const isElementSelfClosing = node.selfClosing || isSelfClosing(node.tag)
-  const openingElement = Babel.jsxOpeningElement(tagName, attributes, isElementSelfClosing)
-  const closingElement = Babel.jsxClosingElement(tagName)
+  const children = convertChildren(node.children)
 
-  return Babel.jsxElement(openingElement, closingElement, [], isElementSelfClosing)
+  return Babel.jsxElement(
+    Babel.jsxOpeningElement(tagName, attributes, isElementSelfClosing),
+    Babel.jsxClosingElement(tagName),
+    isElementSelfClosing ? [] : children,
+    isElementSelfClosing
+  )
 }

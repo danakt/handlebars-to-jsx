@@ -17,6 +17,16 @@ describe('elements', () => {
   })
 })
 
+describe('element values', () => {
+  test('should create literal value', () => {
+    expect(compile('<div>Value</div>')).toBe('<div>Value</div>;')
+  })
+
+  test('should create value with expression', () => {
+    expect(compile('<div>Lorem {{ipsum}} dolor sit amet</div>')).toBe('<div>Lorem {ipsum} dolor sit amet</div>;')
+  })
+})
+
 describe('attributes', () => {
   test('should convert simple text attribute', () => {
     expect(compile('<div id="my-id" />')).toBe('<div id="my-id" />;')
