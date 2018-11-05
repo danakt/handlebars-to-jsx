@@ -2,9 +2,10 @@ import { AST as Glimmer }                 from '@glimmer/syntax'
 import * as Babel                         from '@babel/types'
 import { createFragment, convertElement } from './elements'
 import { resolveBlockStatement }          from './blockStatements'
+import { createComment }                  from './comment'
 
 /**
- * Converts HBS expression to JS-compatible expression
+ * Converts the Handlebars expression to NON-JSX JS-compatible expression
  */
 export const resolveStatement = (statement: Glimmer.Statement): Babel.Expression => {
   switch (statement.type) {
@@ -24,14 +25,18 @@ export const resolveStatement = (statement: Glimmer.Statement): Babel.Expression
       return resolveBlockStatement(statement)
     }
 
+    case 'MustacheCommentStatement': {
+      throw new Error('Top level comments currently is not supported')
+    }
+
     default: {
-      throw new Error('Unexpected expression')
+      throw new Error(`Unexpected expression "${statement.type}"`)
     }
   }
 }
 
 /**
- * Converts the child element of Handlebars node to JSX-compatible child element
+ * Converts the Handlebars node to JSX-children-compatible child element
  */
 export const resolveElementChild = (
   statement: Glimmer.Statement
@@ -43,6 +48,10 @@ export const resolveElementChild = (
 
     case 'TextNode': {
       return Babel.jsxText(statement.chars)
+    }
+
+    case 'MustacheCommentStatement': {
+      return createComment(statement)
     }
 
     // If it expression, create a expression container
