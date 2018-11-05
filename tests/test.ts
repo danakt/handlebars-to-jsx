@@ -41,10 +41,13 @@ describe('element attributes', () => {
     expect(compile('<div 2+2="my-id" />')).toBe('<div />;')
   })
 
-  test('should convert react attribute name', () => {
+  test('should convert specific attribute name', () => {
     expect(compile('<div for="my-id" />')).toBe('<div htmlFor="my-id" />;')
     expect(compile('<div class="my-class" />')).toBe('<div className="my-class" />;')
     expect(compile('<div data-attr="my-data" />')).toBe('<div data-attr="my-data" />;')
+    expect(compile('<svg xmlns:xlink="http://www.w3.org/1999/xlink" />')).toBe(
+      '<svg xmlnsXlink="http://www.w3.org/1999/xlink" />;'
+    )
   })
 
   test('should convert attribute with statement', () => {

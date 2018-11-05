@@ -19,11 +19,12 @@ export const createFragment = (children: Babel.JSXFragment['children']) => {
  */
 export const createAttribute = (attrNode: Glimmer.AttrNode): Babel.JSXAttribute | null => {
   // Unsupported attribute
-  if (!/^[_\-A-z0-9]+$/.test(attrNode.name)) {
+  const reactAttrName = convertHTMLAttribute(attrNode.name)
+
+  if (!/^[_\-A-z0-9]+$/.test(reactAttrName)) {
     return null
   }
 
-  const reactAttrName = convertHTMLAttribute(attrNode.name)
   const name = Babel.jsxIdentifier(reactAttrName)
   const value = attrNode.value
 
