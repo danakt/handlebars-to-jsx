@@ -5,7 +5,8 @@ import { DEFAULT_NAMESPACE_NAME }   from './contants'
 /**
  * Checks is each statement
  */
-const isEachStatement = (node: Glimmer.BlockStatement) => node.path.original === 'each'
+const isEachStatement = (node: Glimmer.Node): node is Glimmer.BlockStatement =>
+  node.type === 'BlockStatement' && node.path.original === 'each'
 
 /**
  * Creates stack of namespaces
@@ -46,19 +47,24 @@ export const prepareProgramPaths = (program: Glimmer.Program, isComponent: boole
     namespaces.push({ node: program, name: 'props' })
   }
 
+  let eachStatementEntered = false
+
   traverse(program, {
     // Process block statements
-    BlockStatement: {
-      enter(node: Glimmer.BlockStatement) {
-        // Creates new namespace to prefix all contained path expressions in
-        // the block scope
-        if (isEachStatement(node)) {
+    All: {
+      enter(node: Glimmer.Node) {
+        if (node.type === 'Program' && eachStatementEntered) {
           namespaces.push({ node })
+          eachStatementEntered = false
+        }
+
+        if (isEachStatement(node)) {
+          eachStatementEntered = true
         }
       },
-      exit(node: Glimmer.BlockStatement) {
+      exit(node: Glimmer.Node) {
         // Exit from namespace
-        if (isEachStatement(node)) {
+        if (namespaces.length > 0 && hash(node) === namespaces.head().hash) {
           namespaces.pop()
         }
       }

@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { compile } from '../src'
 import generate    from '@babel/generator'
 import { parse }   from '@babel/parser'
@@ -21,9 +22,11 @@ describe('elements', () => {
   })
 
   test('should wrap multiple elements to fragment', () => {
-    expect(compile('<div /><div />', false)).toBe('<><div /><div /></>;')
-    expect(compile('Some text <div />', false)).toBe('<>Some text <div /></>;')
-    expect(compile('<div /><span></span><div />', false)).toBe('<><div /><span></span><div /></>;')
+    expect(compile('<div /><div />', false)).toBe('<React.Fragment><div /><div /></React.Fragment>;')
+    expect(compile('Some text <div />', false)).toBe('<React.Fragment>Some text <div /></React.Fragment>;')
+    expect(compile('<div /><span></span><div />', false)).toBe(
+      '<React.Fragment><div /><span></span><div /></React.Fragment>;'
+    )
   })
 })
 
@@ -122,33 +125,49 @@ describe('comments', () => {
 })
 
 describe('block statements', () => {
-  test('should convert condition if-then ', () => {
-    expect(compile('<div>{{#if variable}}<div/>{{/if}}</div>')).toBe(
-      recompile('props => <div>{Boolean(props.variable) && <div />}</div>;')
-    )
+  describe('condition statement', () => {
+    test('should convert condition if-then ', () => {
+      expect(compile('<div>{{#if variable}}<div/>{{/if}}</div>')).toBe(
+        recompile('props => <div>{Boolean(props.variable) && <div />}</div>;')
+      )
+    })
+
+    test('should convert condition if-then-else ', () => {
+      expect(compile('<div>{{#if variable}}<div/>{{else}}<span/>{{/if}}</div>')).toBe(
+        recompile('props => <div>{Boolean(props.variable) ? <div /> : <span />}</div>;')
+      )
+    })
+
+    test('should wrap multiple block children into fragment', () => {
+      expect(compile('<div>{{#if variable}}<div/><span/>{{/if}}</div>')).toBe(
+        recompile('props => <div>{Boolean(props.variable) && <React.Fragment><div /><span /></React.Fragment>}</div>;')
+      )
+    })
+
+    test('should convert condition statement in root', () => {
+      expect(compile('{{#if variable}}<div/>{{else}}<span/>{{/if}}')).toBe(
+        recompile('props => Boolean(props.variable) ? <div /> : <span />;')
+      )
+    })
   })
 
-  test('should convert condition if-then-else ', () => {
-    expect(compile('<div>{{#if variable}}<div/>{{else}}<span/>{{/if}}</div>')).toBe(
-      recompile('props => <div>{Boolean(props.variable) ? <div /> : <span />}</div>;')
-    )
-  })
+  describe('each statement', () => {
+    test('each block statement', () => {
+      expect(compile('<div>{{#each list}}<div id={{this.id}} />{{/each}}</div>')).toBe(
+        'props => <div>{props.list.map((item, i) => <div id={item.id} key={i} />)}</div>;'
+      )
+    })
 
-  test('should wrap multiple block children into fragment', () => {
-    expect(compile('<div>{{#if variable}}<div/><span/>{{/if}}</div>')).toBe(
-      recompile('props => <div>{Boolean(props.variable) && <><div /><span /></>}</div>;')
-    )
-  })
+    test('nested each block statements', () => {
+      expect(compile('<div>{{#each list}}{{#each list.nested}}<div />{{/each}}{{/each}}</div>')).toBe(
+        'props => <div>{props.list.map((item, i) => <React.Fragment key={i}>{item.list.nested.map((item, i) => <div key={i} />)}</React.Fragment>)}</div>;'
+      )
+    })
 
-  test('should convert condition statement in root', () => {
-    expect(compile('{{#if variable}}<div/>{{else}}<span/>{{/if}}')).toBe(
-      recompile('props => Boolean(props.variable) ? <div /> : <span />;')
-    )
+    test('should wrap multiple block children into fragment with keys', () => {
+      expect(compile('<div>{{#each list}}<div /><span /> Text{{/each}}</div>')).toBe(
+        'props => <div>{props.list.map((item, i) => <React.Fragment key={i}><div /><span /> Text</React.Fragment>)}</div>;'
+      )
+    })
   })
-
-  // test('each bock statement', () => {
-  //   expect(compile('<div>{{#each list}}<div id={{this.id}} />{{/each}}</div>')).toBe(
-  //     '<div>{list.map(item => <div id={item.id} />)</div>;'
-  //   )
-  // })
 })

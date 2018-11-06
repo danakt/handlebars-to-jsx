@@ -7,11 +7,19 @@ import { createConcat, resolveExpression, createChildren } from './expressions'
 /**
  * Creates JSX fragment
  */
-export const createFragment = (children: Babel.JSXFragment['children']) => {
-  const openingFragment = Babel.jsxOpeningFragment()
-  const closingFragment = Babel.jsxClosingFragment()
+export const createFragment = (
+  children: Babel.JSXFragment['children'],
+  attributes: (Babel.JSXAttribute | Babel.JSXSpreadAttribute)[] = []
+) => {
+  const fragmentMemberExpression = Babel.jsxMemberExpression(
+    Babel.jsxIdentifier('React'),
+    Babel.jsxIdentifier('Fragment')
+  )
 
-  return Babel.jsxFragment(openingFragment, closingFragment, children)
+  const openingFragment = Babel.jsxOpeningElement(fragmentMemberExpression, attributes)
+  const closingFragment = Babel.jsxClosingElement(fragmentMemberExpression)
+
+  return Babel.jsxElement(openingFragment, closingFragment, children, false)
 }
 
 /**

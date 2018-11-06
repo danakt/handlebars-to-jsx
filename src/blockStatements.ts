@@ -1,6 +1,7 @@
 import { AST as Glimmer }                                                  from '@glimmer/syntax'
 import * as Babel                                                          from '@babel/types'
 import { resolveExpression, createRootChildren, createPath, appendToPath } from './expressions'
+import { createFragment }                                                  from './elements'
 
 /**
  * Resolves block type
@@ -55,10 +56,23 @@ export const createEachStatement = (blockStatement: Glimmer.BlockStatement) => {
   const pathExpression = blockStatement.params[0] as Glimmer.PathExpression
   const iterator = appendToPath(createPath(pathExpression), Babel.identifier('map'))
 
-  const callback = Babel.arrowFunctionExpression(
-    [Babel.identifier('item')],
-    createRootChildren(blockStatement.program.body)
+  const mapCallbackChildren = createRootChildren(blockStatement.program.body)
+
+  // If top-level child element is JS expression, wrap into fragment to add
+  // the "key" attribute.
+  const wrappedCallbackChildren = !Babel.isJSXElement(mapCallbackChildren)
+    ? createFragment([Babel.jsxExpressionContainer(mapCallbackChildren)])
+    : mapCallbackChildren
+
+  // Adding the "key" attribute to child element
+  wrappedCallbackChildren.openingElement.attributes.push(
+    Babel.jsxAttribute(Babel.jsxIdentifier('key'), Babel.jsxExpressionContainer(Babel.identifier('i')))
   )
 
-  return Babel.callExpression(iterator, [callback])
+  const mapCallback = Babel.arrowFunctionExpression(
+    [Babel.identifier('item'), Babel.identifier('i')],
+    wrappedCallbackChildren
+  )
+
+  return Babel.callExpression(iterator, [mapCallback])
 }
