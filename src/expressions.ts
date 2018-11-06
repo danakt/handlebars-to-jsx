@@ -2,7 +2,7 @@ import { AST as Glimmer }                 from '@glimmer/syntax'
 import * as Babel                         from '@babel/types'
 import { createFragment, convertElement } from './elements'
 import { resolveBlockStatement }          from './blockStatements'
-import { createComment }                  from './comment'
+import { createComment }                  from './comments'
 
 /**
  * Converts the Handlebars expression to NON-JSX JS-compatible expression
