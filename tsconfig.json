@@ -4,8 +4,8 @@
     "module": "commonjs",
     "lib": ["es7"],
     "strict": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "jsx": "react"
-  }
+    "outDir": "./dist/",
+    "rootDir": "./src"
+  },
+  "exclude": ["./tests"]
 }
