@@ -1,6 +1,6 @@
-import { AST as Glimmer }                                                from '@glimmer/syntax'
-import * as Babel                                                        from '@babel/types'
-import { resolveExpression, createRootChildren, createMemberExpression } from './expressions'
+import { AST as Glimmer }                                                  from '@glimmer/syntax'
+import * as Babel                                                          from '@babel/types'
+import { resolveExpression, createRootChildren, createPath, appendToPath } from './expressions'
 
 /**
  * Resolves block type
@@ -59,7 +59,8 @@ export const createConditionStatement = (
  */
 export const createEachStatement = (blockStatement: Glimmer.BlockStatement) => {
   const pathExpression = blockStatement.params[0] as Glimmer.PathExpression
-  const eachSubject = createMemberExpression([...pathExpression.parts, 'map'])
+  const eachSubject = appendToPath(createPath(pathExpression), Babel.identifier('map'))
+
   const callback = Babel.arrowFunctionExpression(
     [Babel.identifier('item')],
     createRootChildren(blockStatement.program.body)

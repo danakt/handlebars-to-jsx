@@ -69,7 +69,7 @@ export const resolveExpression = (
 ): Babel.Literal | Babel.Identifier | Babel.MemberExpression => {
   switch (expression.type) {
     case 'PathExpression': {
-      return createMemberExpression(expression.parts)
+      return createPath(expression)
     }
 
     case 'BooleanLiteral': {
@@ -99,18 +99,36 @@ export const resolveExpression = (
 }
 
 /**
- * Creates chain of member expression parts
+ * Returns path to variable
  */
-export const createMemberExpression = (parts: string[]): Babel.Identifier | Babel.MemberExpression => {
+export const createPath = (pathExpression: Glimmer.PathExpression): Babel.Identifier | Babel.MemberExpression => {
+  const parts = pathExpression.parts
+
   if (parts.length === 0) {
     throw new Error('Unexpected empty expression parts')
   }
 
-  return parts.reduce(
-    (acc, item) => (acc == null ? Babel.identifier(item) : Babel.memberExpression(acc, Babel.identifier(item))),
-    null as null | Babel.Identifier | Babel.MemberExpression
-  )!
+  // Start identifier
+  let acc: Babel.Identifier | Babel.MemberExpression = Babel.identifier(parts[0])
+
+  for (let i = 1; i < parts.length; i++) {
+    acc = appendToPath(acc, Babel.identifier(parts[i]))
+  }
+
+  return acc
 }
+
+/**
+ * Appends item to path
+ */
+export const appendToPath = (path: Babel.MemberExpression | Babel.Identifier, append: Babel.Identifier) =>
+  Babel.memberExpression(path, append)
+
+/**
+ * Prepends item to path
+ */
+export const prependToPath = (path: Babel.MemberExpression | Babel.Identifier, prepend: Babel.Identifier) =>
+  Babel.memberExpression(prepend, path)
 
 /**
  * Converts child statements of element to JSX-compatible expressions
