@@ -60,7 +60,7 @@ describe('component support', () => {
   })
 
   test('should export component by default', () => {
-    expect(compile('<div>{{variable}}</div>', true, true)).toBe(
+    expect(compile('<div>{{variable}}</div>', { isModule: true, isComponent: true })).toBe(
       recompile('export default props => <div>{props.variable}</div>')
     )
   })
