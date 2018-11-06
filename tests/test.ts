@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import { compile } from '../src'
+import { compile } from '../'
 import generate    from '@babel/generator'
 import { parse }   from '@babel/parser'
 
