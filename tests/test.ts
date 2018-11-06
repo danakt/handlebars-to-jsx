@@ -90,7 +90,7 @@ describe('element attributes', () => {
     expect(compile('<div id={{path.to.variable}} />')).toBe(recompile('props => <div id={props.path.to.variable} />;'))
   })
 
-  test('should throw error when used reserved JavaScript words', () => {
+  xtest('should throw error when used reserved JavaScript words', () => {
     // TODO
   })
 
