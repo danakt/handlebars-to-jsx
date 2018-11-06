@@ -98,10 +98,12 @@ describe('element attributes', () => {
     expect(compile('<div id="{{123}}" />', false)).toBe('<div id={123} />;')
     expect(compile('<div id="{{null}}" />', false)).toBe('<div id={null} />;')
     expect(compile('<div id="{{variable}}" />')).toBe(recompile('props => <div id={props.variable} />;'))
-
     expect(compile('<div id="my {{variable}}" />')).toBe(recompile('props => <div id={"my " + props.variable} />;'))
     expect(compile('<div id="two {{variables}} {{in.one.attribute}}" />')).toBe(
       recompile('props => <div id={"two " + props.variables + " " + props.in.one.attribute} />;')
+    )
+    expect(compile('<a href="/posts/{{permalink}}#{{id}}">Link</a>', false)).toBe(
+      '<a href={"/posts/" + permalink + "#" + id}>Link</a>;'
     )
   })
 })

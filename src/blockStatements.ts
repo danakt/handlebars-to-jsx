@@ -2,6 +2,7 @@ import { AST as Glimmer }                                                  from 
 import * as Babel                                                          from '@babel/types'
 import { resolveExpression, createRootChildren, createPath, appendToPath } from './expressions'
 import { createFragment }                                                  from './elements'
+import { DEFAULT_NAMESPACE_NAME, DEFAULT_KEY_NAME }                        from './contants'
 
 /**
  * Resolves block type
@@ -66,11 +67,11 @@ export const createEachStatement = (blockStatement: Glimmer.BlockStatement) => {
 
   // Adding the "key" attribute to child element
   wrappedCallbackChildren.openingElement.attributes.push(
-    Babel.jsxAttribute(Babel.jsxIdentifier('key'), Babel.jsxExpressionContainer(Babel.identifier('i')))
+    Babel.jsxAttribute(Babel.jsxIdentifier('key'), Babel.jsxExpressionContainer(Babel.identifier(DEFAULT_KEY_NAME)))
   )
 
   const mapCallback = Babel.arrowFunctionExpression(
-    [Babel.identifier('item'), Babel.identifier('i')],
+    [Babel.identifier(DEFAULT_NAMESPACE_NAME), Babel.identifier(DEFAULT_KEY_NAME)],
     wrappedCallbackChildren
   )
 
