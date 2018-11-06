@@ -5,7 +5,9 @@ import { resolveBlockStatement }          from './blockStatements'
 import { createComment }                  from './comments'
 
 /**
- * Converts the Handlebars expression to NON-JSX JS-compatible expression
+ * Converts the Handlebars expression to NON-JSX JS-compatible expression.
+ * Creates top-level expression or expression which need to wrap to JSX
+ * expression container.
  */
 export const resolveStatement = (statement: Glimmer.Statement): Babel.Expression => {
   switch (statement.type) {
@@ -25,7 +27,8 @@ export const resolveStatement = (statement: Glimmer.Statement): Babel.Expression
       return resolveBlockStatement(statement)
     }
 
-    case 'MustacheCommentStatement': {
+    case 'MustacheCommentStatement':
+    case 'CommentStatement': {
       throw new Error('Top level comments currently is not supported')
     }
 
@@ -36,7 +39,9 @@ export const resolveStatement = (statement: Glimmer.Statement): Babel.Expression
 }
 
 /**
- * Converts the Handlebars node to JSX-children-compatible child element
+ * Converts the Handlebars node to JSX-children-compatible child element.
+ * Creates JSX expression or expression container with JS expression, to place
+ * to children of a JSX element.
  */
 export const resolveElementChild = (
   statement: Glimmer.Statement
@@ -50,7 +55,8 @@ export const resolveElementChild = (
       return Babel.jsxText(statement.chars)
     }
 
-    case 'MustacheCommentStatement': {
+    case 'MustacheCommentStatement':
+    case 'CommentStatement': {
       return createComment(statement)
     }
 

@@ -18,6 +18,7 @@ describe('elements', () => {
 
   test('should wrap multiple elements to fragment', () => {
     expect(compile('<div /><div />')).toBe('<><div /><div /></>;')
+    expect(compile('Some text <div />')).toBe('<>Some text <div /></>;')
     expect(compile('<div /><span></span><div />')).toBe('<><div /><span></span><div /></>;')
   })
 })
@@ -75,6 +76,7 @@ describe('comments', () => {
     expect(compile('<div>{{!-- long-comment --~}}</div>')).toBe(recompile('<div>{/* long-comment */}</div>;'))
     expect(compile('<div>{{~! comment }}</div>')).toBe(recompile('<div>{/* comment */}</div>;'))
     expect(compile('<div>{{~!-- long-comment --}}</div>')).toBe(recompile('<div>{/* long-comment */}</div>;'))
+    expect(compile('<div><!-- html comment --></div>')).toBe(recompile('<div>{/* html comment */}</div>;'))
   })
 
   test("shouldn't convert top-level comment", () => {
