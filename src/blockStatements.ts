@@ -12,13 +12,7 @@ export const resolveBlockStatement = (blockStatement: Glimmer.BlockStatement) =>
     }
 
     case 'each': {
-      const eachStatement = createEachStatement(blockStatement)
-
-      // Babel.traverse(eachStatement, (node, parents) => {
-      //   console.log(node, parents)
-      // })
-
-      return eachStatement
+      return createEachStatement(blockStatement)
     }
 
     default: {
@@ -59,12 +53,12 @@ export const createConditionStatement = (
  */
 export const createEachStatement = (blockStatement: Glimmer.BlockStatement) => {
   const pathExpression = blockStatement.params[0] as Glimmer.PathExpression
-  const eachSubject = appendToPath(createPath(pathExpression), Babel.identifier('map'))
+  const iterator = appendToPath(createPath(pathExpression), Babel.identifier('map'))
 
   const callback = Babel.arrowFunctionExpression(
     [Babel.identifier('item')],
     createRootChildren(blockStatement.program.body)
   )
 
-  return Babel.callExpression(eachSubject, [callback])
+  return Babel.callExpression(iterator, [callback])
 }

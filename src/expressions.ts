@@ -150,15 +150,6 @@ export const createRootChildren = (body: Glimmer.Statement[]): Babel.Expression 
   body.length === 1 ? resolveStatement(body[0]) : createFragment(createChildren(body))
 
 /**
- * Creates program statement
- */
-export const createProgram = (program: Glimmer.Program): Babel.Program => {
-  const body = [Babel.expressionStatement(createRootChildren(program.body))]
-
-  return Babel.program(body)
-}
-
-/**
  * Creates attribute value concatenation
  */
 export const createConcat = (parts: Glimmer.ConcatStatement['parts']): Babel.BinaryExpression | Babel.Expression => {

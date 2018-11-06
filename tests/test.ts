@@ -2,81 +2,116 @@ import { compile } from '../src'
 import generate    from '@babel/generator'
 import { parse }   from '@babel/parser'
 
-/** Parses js-code to ast and compile again to js */
-const recompile = (jsCode: string) => generate(parse(jsCode, { plugins: ['jsx'] }).program).code
+/**
+ * Parses js-code to ast and compile again to js. Used to bring in a view that
+ * is obtained when compiling ast.
+ */
+const recompile = (jsCode: string): string =>
+  generate(parse(jsCode, { plugins: ['jsx'], sourceType: 'module' }).program).code
 
 describe('elements', () => {
   test('should convert simple div', () => {
-    expect(compile('<div></div>')).toBe('<div></div>;')
+    expect(compile('<div></div>', false)).toBe('<div></div>;')
   })
 
   test('should close self-closing elements', () => {
-    expect(compile('<img>')).toBe('<img />;')
-    expect(compile('<link>')).toBe('<link />;')
-    expect(compile('<br>')).toBe('<br />;')
+    expect(compile('<img>', false)).toBe('<img />;')
+    expect(compile('<link>', false)).toBe('<link />;')
+    expect(compile('<br>', false)).toBe('<br />;')
   })
 
   test('should wrap multiple elements to fragment', () => {
-    expect(compile('<div /><div />')).toBe('<><div /><div /></>;')
-    expect(compile('Some text <div />')).toBe('<>Some text <div /></>;')
-    expect(compile('<div /><span></span><div />')).toBe('<><div /><span></span><div /></>;')
+    expect(compile('<div /><div />', false)).toBe('<><div /><div /></>;')
+    expect(compile('Some text <div />', false)).toBe('<>Some text <div /></>;')
+    expect(compile('<div /><span></span><div />', false)).toBe('<><div /><span></span><div /></>;')
   })
 })
 
 describe('element values', () => {
   test('should create literal value', () => {
-    expect(compile('<div>Value</div>')).toBe('<div>Value</div>;')
+    expect(compile('<div>Value</div>', false)).toBe('<div>Value</div>;')
   })
 
   test('should create value with expression', () => {
-    expect(compile('<div>Lorem {{ipsum}} dolor sit amet</div>')).toBe('<div>Lorem {ipsum} dolor sit amet</div>;')
+    expect(compile('<div>Lorem {{ipsum}} dolor sit amet</div>')).toBe(
+      recompile('props => <div>Lorem {props.ipsum} dolor sit amet</div>')
+    )
+  })
+})
+
+describe('component support', () => {
+  test('should return component', () => {
+    expect(compile('<div />')).toBe('props => <div />;')
+  })
+
+  test("shouldn't return component", () => {
+    expect(compile('<div />', false)).toBe('<div />;')
+  })
+
+  test('should add "props" prefix to variables in component', () => {
+    expect(compile('<div>{{variable}}</div>')).toBe(recompile('props => <div>{props.variable}</div>'))
+  })
+
+  test('shouldn\'t add "props" prefix to variables if it\'s not component', () => {
+    expect(compile('<div>{{variable}}</div>', false)).toBe('<div>{variable}</div>;')
+  })
+
+  test('should export component by default', () => {
+    expect(compile('<div>{{variable}}</div>', true, true)).toBe(
+      recompile('export default props => <div>{props.variable}</div>')
+    )
   })
 })
 
 describe('element attributes', () => {
   test('should convert simple text attribute', () => {
-    expect(compile('<div id="my-id" />')).toBe('<div id="my-id" />;')
+    expect(compile('<div id="my-id" />', false)).toBe('<div id="my-id" />;')
   })
 
   test('should remove unsupported attribute', () => {
-    expect(compile('<div 2+2="my-id" />')).toBe('<div />;')
+    expect(compile('<div 2+2="my-id" />', false)).toBe('<div />;')
   })
 
   test('should convert specific attribute name', () => {
-    expect(compile('<div for="my-id" />')).toBe('<div htmlFor="my-id" />;')
-    expect(compile('<div class="my-class" />')).toBe('<div className="my-class" />;')
-    expect(compile('<div data-attr="my-data" />')).toBe('<div data-attr="my-data" />;')
-    expect(compile('<svg xmlns:xlink="http://www.w3.org/1999/xlink" />')).toBe(
+    expect(compile('<div for="my-id" />', false)).toBe('<div htmlFor="my-id" />;')
+    expect(compile('<div class="my-class" />', false)).toBe('<div className="my-class" />;')
+    expect(compile('<div data-attr="my-data" />', false)).toBe('<div data-attr="my-data" />;')
+    expect(compile('<svg xmlns:xlink="http://www.w3.org/1999/xlink" />', false)).toBe(
       '<svg xmlnsXlink="http://www.w3.org/1999/xlink" />;'
     )
   })
 
   test('should convert attribute with statement', () => {
-    expect(compile('<div id={{undefined}} />')).toBe('<div id={undefined} />;')
-    expect(compile('<div id={{true}} />')).toBe('<div id={true} />;')
-    expect(compile('<div id={{path.to.variable}} />')).toBe('<div id={path.to.variable} />;')
+    expect(compile('<div id={{undefined}} />', false)).toBe('<div id={undefined} />;')
+    expect(compile('<div id={{true}} />', false)).toBe('<div id={true} />;')
+    expect(compile('<div id={{path.to.variable}} />')).toBe(recompile('props => <div id={props.path.to.variable} />;'))
+  })
+
+  test('should throw error when used reserved JavaScript words', () => {
+    // TODO
   })
 
   test('should convert attribute with concatenation statement', () => {
-    expect(compile('<div id="{{123}}" />')).toBe('<div id={123} />;')
-    expect(compile('<div id="{{null}}" />')).toBe('<div id={null} />;')
-    expect(compile('<div id="{{variable}}" />')).toBe('<div id={variable} />;')
-    expect(compile('<div id="my {{variable}}" />')).toBe('<div id={"my " + variable} />;')
+    expect(compile('<div id="{{123}}" />', false)).toBe('<div id={123} />;')
+    expect(compile('<div id="{{null}}" />', false)).toBe('<div id={null} />;')
+    expect(compile('<div id="{{variable}}" />')).toBe(recompile('props => <div id={props.variable} />;'))
+
+    expect(compile('<div id="my {{variable}}" />')).toBe(recompile('props => <div id={"my " + props.variable} />;'))
     expect(compile('<div id="two {{variables}} {{in.one.attribute}}" />')).toBe(
-      '<div id={"two " + variables + " " + in.one.attribute} />;'
+      recompile('props => <div id={"two " + props.variables + " " + props.in.one.attribute} />;')
     )
   })
 })
 
 describe('comments', () => {
   test('should convert comment in JSX code', () => {
-    expect(compile('<div>{{~! comment ~}}</div>')).toBe(recompile('<div>{/* comment */}</div>;'))
-    expect(compile('<div>{{~!-- long-comment --~}}</div>')).toBe(recompile('<div>{/* long-comment */}</div>;'))
-    expect(compile('<div>{{! comment ~}}</div>')).toBe(recompile('<div>{/* comment */}</div>;'))
-    expect(compile('<div>{{!-- long-comment --~}}</div>')).toBe(recompile('<div>{/* long-comment */}</div>;'))
-    expect(compile('<div>{{~! comment }}</div>')).toBe(recompile('<div>{/* comment */}</div>;'))
-    expect(compile('<div>{{~!-- long-comment --}}</div>')).toBe(recompile('<div>{/* long-comment */}</div>;'))
-    expect(compile('<div><!-- html comment --></div>')).toBe(recompile('<div>{/* html comment */}</div>;'))
+    expect(compile('<div>{{~! comment ~}}</div>', false)).toBe(recompile('<div>{/* comment */}</div>;'))
+    expect(compile('<div>{{~!-- long-comment --~}}</div>', false)).toBe(recompile('<div>{/* long-comment */}</div>;'))
+    expect(compile('<div>{{! comment ~}}</div>', false)).toBe(recompile('<div>{/* comment */}</div>;'))
+    expect(compile('<div>{{!-- long-comment --~}}</div>', false)).toBe(recompile('<div>{/* long-comment */}</div>;'))
+    expect(compile('<div>{{~! comment }}</div>', false)).toBe(recompile('<div>{/* comment */}</div>;'))
+    expect(compile('<div>{{~!-- long-comment --}}</div>', false)).toBe(recompile('<div>{/* long-comment */}</div>;'))
+    expect(compile('<div><!-- html comment --></div>', false)).toBe(recompile('<div>{/* html comment */}</div>;'))
   })
 
   test("shouldn't convert top-level comment", () => {
@@ -88,23 +123,27 @@ describe('comments', () => {
 
 describe('block statements', () => {
   test('should convert condition if-then ', () => {
-    expect(compile('<div>{{#if variable}}<div/>{{/if}}</div>')).toBe('<div>{Boolean(variable) && <div />}</div>;')
+    expect(compile('<div>{{#if variable}}<div/>{{/if}}</div>')).toBe(
+      recompile('props => <div>{Boolean(props.variable) && <div />}</div>;')
+    )
   })
 
   test('should convert condition if-then-else ', () => {
     expect(compile('<div>{{#if variable}}<div/>{{else}}<span/>{{/if}}</div>')).toBe(
-      '<div>{Boolean(variable) ? <div /> : <span />}</div>;'
+      recompile('props => <div>{Boolean(props.variable) ? <div /> : <span />}</div>;')
     )
   })
 
   test('should wrap multiple block children into fragment', () => {
     expect(compile('<div>{{#if variable}}<div/><span/>{{/if}}</div>')).toBe(
-      '<div>{Boolean(variable) && <><div /><span /></>}</div>;'
+      recompile('props => <div>{Boolean(props.variable) && <><div /><span /></>}</div>;')
     )
   })
 
   test('should convert condition statement in root', () => {
-    expect(compile('{{#if variable}}<div/>{{else}}<span/>{{/if}}')).toBe('Boolean(variable) ? <div /> : <span />;')
+    expect(compile('{{#if variable}}<div/>{{else}}<span/>{{/if}}')).toBe(
+      recompile('props => Boolean(props.variable) ? <div /> : <span />;')
+    )
   })
 
   // test('each bock statement', () => {
