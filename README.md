@@ -99,6 +99,7 @@ const hbsCode = '<div>{{variable}}</div>'
 
 const jsxCode = compile(hbsCode, { isComponent: false })
 // <div>{variable}</div>;
+
 const { code } = babel.transform(jsxCode, {
   plugins: [pluginTransformReactJSX]
 })

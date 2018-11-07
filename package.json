@@ -1,13 +1,29 @@
 {
   "name": "handlebars-to-jsx",
   "version": "0.0.1",
+  "author": "Danakt Frost <danakt@protonmail.com>",
   "license": "MIT",
+  "description": "Converts Handlebars template to React component",
   "main": "dist/index.js",
-  "typings": "index.d.ts",
   "scripts": {
     "test": "jest",
     "build": "tsc"
   },
+  "keywords": [
+    "handlebars",
+    "jsx",
+    "react",
+    "converter"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danakt/handlebars-to-jsx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/danakt/handlebars-to-jsx/issues"
+  },
+  "homepage": "https://github.com/danakt/handlebars-to-jsx",
+  "typings": "index.d.ts",
   "devDependencies": {
     "@types/babel__generator": "^7.0.0",
     "@types/babel__parser": "^7.0.0",
