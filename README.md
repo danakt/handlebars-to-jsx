@@ -36,7 +36,7 @@ compile(input[, options])
     The default is `false`. Should return generated code exported by default.
     <!-- Should be compiled as  -->
 
-Use it for simple converting a Handlebars code to JSX:
+Use it for simple converting Handlebars template to JSX code:
 
 ```js
 compile('<div>{{variable}}</div>')
@@ -45,13 +45,13 @@ compile('<div>{{variable}}</div>')
 // props => <div>{props.variable}</div>
 ```
 
-By default the `compile` function returns function components. You can convert Handlebars template to JSX without wrapping to arrow function. In this variant, `props` is not added to the path of variables.
+By default the `compile` function returns function component. You can convert Handlebars template to JSX without wrapping to arrow function. In this variant, `props` is not added to the path of variables.
 
 ```js
 compile('<div>{{variable}}</div>', { isComponent: false })
 
 // Result
-<div>{variable}</div>
+// <div>{variable}</div>
 ```
 
 Also, you can get exported by default component:
@@ -60,5 +60,31 @@ Also, you can get exported by default component:
 compile('<div>{{variable}}</div>', { isModule: true })
 
 // Result
-export default props => <div>{props.variable}</div>
+// export default props => <div>{props.variable}</div>
 ```
+
+## Code formatting
+
+The output code creates from AST tree, so it's unformatted by default. You can use tools like [Prettier](https://prettier.io/docs/en/api.html) to format code:
+
+```js
+import { compile } from 'handlebars-to-jsx'
+import prettier from 'prettier'
+
+// The Handlebars input
+const hbsCode = '<div>{{#each list}}<span>{{item}}</span>{{/each}}</div>'
+
+const jsxCode = compile(hbsCode, { isComponent: false })
+// <div>{list.map((item, i) => <span key={i}>{item.item}</span>)}</div>;
+
+prettier.format(jsxCode, { parser: 'babylon' })
+// <div>
+//   {list.map((item, i) => (
+//     <span key={i}>{item.item}</span>
+//   ))}
+// </div>;
+```
+
+## License
+
+MIT licensed
