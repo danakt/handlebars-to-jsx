@@ -2,6 +2,27 @@
 
 Converts Handlebars to JSX-component. Uses [Glimmer VM](https://github.com/glimmerjs/glimmer-vm/) to parse Handlebars code to AST and [Babel](https://github.com/babel/babel/) to create JSX AST and generate code.
 
+## Install
+
+```bash
+# via NPM
+npm install handlebars-to-jsx
+
+# or Yarn
+yarn add handlebars-to-jsx
+```
+
+## Usage
+
+```js
+import { compile } from 'handlebars-to-jsx';
+
+const hbsCode = '<div>{{variable}}</div>';
+
+const jsxCode = compile(hbsCode, { isComponent: true, isModule: true });
+// export default props => <div>{props.variable}</div>
+```
+
 ## Conversion example
 
 Source code
