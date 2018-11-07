@@ -85,6 +85,26 @@ prettier.format(jsxCode, { parser: 'babylon' })
 // </div>;
 ```
 
+## Transpilation
+
+If you wanna have code of version JavaScript lower than ES6, or you wanna have the React source JS code without JSX, you can use [babel](https://github.com/babel/babel):
+
+```js
+import { compile } from 'handlebars-to-jsx'
+import babel from '@babel/core'
+import pluginTransformReactJSX from '@babel/plugin-transform-react-jsx'
+
+// The Handlebars input
+const hbsCode = '<div>{{variable}}</div>'
+
+const jsxCode = compile(hbsCode, { isComponent: false })
+// <div>{variable}</div>;
+const { code } = babel.transform(jsxCode, {
+  plugins: [pluginTransformReactJSX]
+})
+// React.createElement("div", null, variable);
+```
+
 ## License
 
 MIT licensed
