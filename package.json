@@ -1,5 +1,5 @@
 {
-  "name": "handlerbars-to-jsx",
+  "name": "handlebars-to-jsx",
   "version": "0.0.1",
   "license": "MIT",
   "main": "dist/index.js",
