@@ -109,8 +109,6 @@ describe('element attributes', () => {
   })
 
   test('should convert the "styles" string to stylesObject', () => {
-    console.log(compile('<div style="background-image: url(\'image.png\'); margin-left: 10px" />', false))
-
     expect(compile('<div style="background-image: url(\'image.png\'); margin-left: 10px" />', false)).toBe(
       recompile('<div style={{ "backgroundImage": "url(\'image.png\')", "marginLeft": "10px" }} />')
     )

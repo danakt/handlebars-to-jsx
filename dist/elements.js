@@ -4,6 +4,7 @@ var Babel = require("@babel/types");
 var isSelfClosing = require("is-self-closing");
 var convertHTMLAttribute = require("react-attr-converter");
 var expressions_1 = require("./expressions");
+var styles_1 = require("./styles");
 /**
  * Creates JSX fragment
  */
@@ -27,6 +28,10 @@ exports.createAttribute = function (attrNode) {
     var value = attrNode.value;
     switch (value.type) {
         case 'TextNode': {
+            if (reactAttrName === 'style') {
+                var styleObjectExpression = styles_1.parseStyleString(value.chars);
+                return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(styleObjectExpression));
+            }
             return Babel.jsxAttribute(name, Babel.stringLiteral(value.chars));
         }
         case 'MustacheStatement': {
