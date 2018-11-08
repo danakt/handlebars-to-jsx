@@ -1,9 +1,6 @@
-# Handlebars to JSX
+# Handlebars to JSX [![NPM](https://img.shields.io/npm/v/handlebars-to-jsx.svg?style=flat-square)](https://www.npmjs.com/package/handlebars-to-jsx) [![Build Status](https://img.shields.io/travis/danakt/handlebars-to-jsx.svg?style=flat-square)](https://travis-ci.org/danakt/handlebars-to-jsx)
 
 Converts Handlebars template to JSX-component. Uses [Glimmer VM](https://github.com/glimmerjs/glimmer-vm/) to parse Handlebars code to AST and [Babel](https://github.com/babel/babel/) to create JSX AST and generate code.
-
-[![NPM](https://img.shields.io/npm/v/handlebars-to-jsx.svg?style=flat-square)](https://www.npmjs.com/package/handlebars-to-jsx)
-[![Build Status](https://img.shields.io/travis/danakt/handlebars-to-jsx.svg?style=flat-square)](https://travis-ci.org/danakt/handlebars-to-jsx)
 
 ## Installation
 
