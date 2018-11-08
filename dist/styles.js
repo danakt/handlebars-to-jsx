@@ -13,7 +13,10 @@ exports.createStyleObject = function (style) {
     var styleObject = {};
     var stylePropsList = style.split(';');
     for (var i = 0; i < stylePropsList.length; i++) {
-        var entry = stylePropsList[i].split(':');
+        var entry = stylePropsList[i].trim().split(':');
+        if (entry.length < 2) {
+            continue;
+        }
         var propName = exports.camelizePropName(entry[0].trim());
         styleObject[propName] = entry[1].trim();
     }
