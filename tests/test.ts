@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import { compile } from '../'
+// import { compile } from '../src'
 import generate    from '@babel/generator'
 import { parse }   from '@babel/parser'
 
@@ -104,6 +105,14 @@ describe('element attributes', () => {
     )
     expect(compile('<a href="/posts/{{permalink}}#{{id}}">Link</a>', false)).toBe(
       '<a href={"/posts/" + permalink + "#" + id}>Link</a>;'
+    )
+  })
+
+  test('should convert the "styles" string to stylesObject', () => {
+    console.log(compile('<div style="background-image: url(\'image.png\'); margin-left: 10px" />', false))
+
+    expect(compile('<div style="background-image: url(\'image.png\'); margin-left: 10px" />', false)).toBe(
+      recompile('<div style={{ "backgroundImage": "url(\'image.png\')", "marginLeft": "10px" }} />')
     )
   })
 })

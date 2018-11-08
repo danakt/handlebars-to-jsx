@@ -3,6 +3,7 @@ import * as Babel                                          from '@babel/types'
 import * as isSelfClosing                                  from 'is-self-closing'
 import * as convertHTMLAttribute                           from 'react-attr-converter'
 import { createConcat, resolveExpression, createChildren } from './expressions'
+import { parseStyleString }                                from './styles'
 
 /**
  * Creates JSX fragment
@@ -38,6 +39,11 @@ export const createAttribute = (attrNode: Glimmer.AttrNode): Babel.JSXAttribute 
 
   switch (value.type) {
     case 'TextNode': {
+      if (reactAttrName === 'style') {
+        const styleObjectExpression = parseStyleString(value.chars)
+        return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(styleObjectExpression))
+      }
+
       return Babel.jsxAttribute(name, Babel.stringLiteral(value.chars))
     }
 

@@ -1,0 +1,196 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`styles should create ast tree of style object from style string 1`] = `
+Node {
+  "comments": Array [],
+  "end": 98,
+  "loc": SourceLocation {
+    "end": Position {
+      "column": 98,
+      "line": 1,
+    },
+    "start": Position {
+      "column": 0,
+      "line": 1,
+    },
+  },
+  "properties": Array [
+    Node {
+      "computed": false,
+      "end": 37,
+      "key": Node {
+        "end": 18,
+        "extra": Object {
+          "raw": "\\"backgroundImage\\"",
+          "rawValue": "backgroundImage",
+        },
+        "loc": SourceLocation {
+          "end": Position {
+            "column": 18,
+            "line": 1,
+          },
+          "start": Position {
+            "column": 1,
+            "line": 1,
+          },
+        },
+        "start": 1,
+        "type": "StringLiteral",
+        "value": "backgroundImage",
+      },
+      "loc": SourceLocation {
+        "end": Position {
+          "column": 37,
+          "line": 1,
+        },
+        "start": Position {
+          "column": 1,
+          "line": 1,
+        },
+      },
+      "method": false,
+      "shorthand": false,
+      "start": 1,
+      "type": "ObjectProperty",
+      "value": Node {
+        "end": 37,
+        "extra": Object {
+          "raw": "\\"url('image.png')\\"",
+          "rawValue": "url('image.png')",
+        },
+        "loc": SourceLocation {
+          "end": Position {
+            "column": 37,
+            "line": 1,
+          },
+          "start": Position {
+            "column": 19,
+            "line": 1,
+          },
+        },
+        "start": 19,
+        "type": "StringLiteral",
+        "value": "url('image.png')",
+      },
+    },
+    Node {
+      "computed": false,
+      "end": 57,
+      "key": Node {
+        "end": 50,
+        "extra": Object {
+          "raw": "\\"marginLeft\\"",
+          "rawValue": "marginLeft",
+        },
+        "loc": SourceLocation {
+          "end": Position {
+            "column": 50,
+            "line": 1,
+          },
+          "start": Position {
+            "column": 38,
+            "line": 1,
+          },
+        },
+        "start": 38,
+        "type": "StringLiteral",
+        "value": "marginLeft",
+      },
+      "loc": SourceLocation {
+        "end": Position {
+          "column": 57,
+          "line": 1,
+        },
+        "start": Position {
+          "column": 38,
+          "line": 1,
+        },
+      },
+      "method": false,
+      "shorthand": false,
+      "start": 38,
+      "type": "ObjectProperty",
+      "value": Node {
+        "end": 57,
+        "extra": Object {
+          "raw": "\\"10px\\"",
+          "rawValue": "10px",
+        },
+        "loc": SourceLocation {
+          "end": Position {
+            "column": 57,
+            "line": 1,
+          },
+          "start": Position {
+            "column": 51,
+            "line": 1,
+          },
+        },
+        "start": 51,
+        "type": "StringLiteral",
+        "value": "10px",
+      },
+    },
+    Node {
+      "computed": false,
+      "end": 97,
+      "key": Node {
+        "end": 75,
+        "extra": Object {
+          "raw": "\\"WebitTransition\\"",
+          "rawValue": "WebitTransition",
+        },
+        "loc": SourceLocation {
+          "end": Position {
+            "column": 75,
+            "line": 1,
+          },
+          "start": Position {
+            "column": 58,
+            "line": 1,
+          },
+        },
+        "start": 58,
+        "type": "StringLiteral",
+        "value": "WebitTransition",
+      },
+      "loc": SourceLocation {
+        "end": Position {
+          "column": 97,
+          "line": 1,
+        },
+        "start": Position {
+          "column": 58,
+          "line": 1,
+        },
+      },
+      "method": false,
+      "shorthand": false,
+      "start": 58,
+      "type": "ObjectProperty",
+      "value": Node {
+        "end": 97,
+        "extra": Object {
+          "raw": "\\"opacity 1s ease-out\\"",
+          "rawValue": "opacity 1s ease-out",
+        },
+        "loc": SourceLocation {
+          "end": Position {
+            "column": 97,
+            "line": 1,
+          },
+          "start": Position {
+            "column": 76,
+            "line": 1,
+          },
+        },
+        "start": 76,
+        "type": "StringLiteral",
+        "value": "opacity 1s ease-out",
+      },
+    },
+  ],
+  "start": 0,
+  "type": "ObjectExpression",
+}
+`;
