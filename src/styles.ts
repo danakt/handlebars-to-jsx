@@ -15,7 +15,7 @@ export const createStyleObject = (style: string): Record<string, string | number
   const stylePropsList = style.split(';')
 
   for (let i = 0; i < stylePropsList.length; i++) {
-    const entry = stylePropsList[i].trim().split(':')
+    const entry = stylePropsList[i].trim().split(/:(.+)/)
 
     if (entry.length < 2) {
       continue

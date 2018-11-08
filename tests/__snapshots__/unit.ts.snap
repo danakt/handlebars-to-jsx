@@ -3,10 +3,10 @@
 exports[`styles should create ast tree of style object from style string 1`] = `
 Node {
   "comments": Array [],
-  "end": 98,
+  "end": 118,
   "loc": SourceLocation {
     "end": Position {
-      "column": 98,
+      "column": 118,
       "line": 1,
     },
     "start": Position {
@@ -17,7 +17,7 @@ Node {
   "properties": Array [
     Node {
       "computed": false,
-      "end": 37,
+      "end": 57,
       "key": Node {
         "end": 18,
         "extra": Object {
@@ -40,7 +40,7 @@ Node {
       },
       "loc": SourceLocation {
         "end": Position {
-          "column": 37,
+          "column": 57,
           "line": 1,
         },
         "start": Position {
@@ -53,14 +53,14 @@ Node {
       "start": 1,
       "type": "ObjectProperty",
       "value": Node {
-        "end": 37,
+        "end": 57,
         "extra": Object {
-          "raw": "\\"url('image.png')\\"",
-          "rawValue": "url('image.png')",
+          "raw": "\\"url('https://example.com/image.png')\\"",
+          "rawValue": "url('https://example.com/image.png')",
         },
         "loc": SourceLocation {
           "end": Position {
-            "column": 37,
+            "column": 57,
             "line": 1,
           },
           "start": Position {
@@ -70,79 +70,21 @@ Node {
         },
         "start": 19,
         "type": "StringLiteral",
-        "value": "url('image.png')",
+        "value": "url('https://example.com/image.png')",
       },
     },
     Node {
       "computed": false,
-      "end": 57,
+      "end": 77,
       "key": Node {
-        "end": 50,
+        "end": 70,
         "extra": Object {
           "raw": "\\"marginLeft\\"",
           "rawValue": "marginLeft",
         },
         "loc": SourceLocation {
           "end": Position {
-            "column": 50,
-            "line": 1,
-          },
-          "start": Position {
-            "column": 38,
-            "line": 1,
-          },
-        },
-        "start": 38,
-        "type": "StringLiteral",
-        "value": "marginLeft",
-      },
-      "loc": SourceLocation {
-        "end": Position {
-          "column": 57,
-          "line": 1,
-        },
-        "start": Position {
-          "column": 38,
-          "line": 1,
-        },
-      },
-      "method": false,
-      "shorthand": false,
-      "start": 38,
-      "type": "ObjectProperty",
-      "value": Node {
-        "end": 57,
-        "extra": Object {
-          "raw": "\\"10px\\"",
-          "rawValue": "10px",
-        },
-        "loc": SourceLocation {
-          "end": Position {
-            "column": 57,
-            "line": 1,
-          },
-          "start": Position {
-            "column": 51,
-            "line": 1,
-          },
-        },
-        "start": 51,
-        "type": "StringLiteral",
-        "value": "10px",
-      },
-    },
-    Node {
-      "computed": false,
-      "end": 97,
-      "key": Node {
-        "end": 75,
-        "extra": Object {
-          "raw": "\\"WebitTransition\\"",
-          "rawValue": "WebitTransition",
-        },
-        "loc": SourceLocation {
-          "end": Position {
-            "column": 75,
+            "column": 70,
             "line": 1,
           },
           "start": Position {
@@ -152,11 +94,11 @@ Node {
         },
         "start": 58,
         "type": "StringLiteral",
-        "value": "WebitTransition",
+        "value": "marginLeft",
       },
       "loc": SourceLocation {
         "end": Position {
-          "column": 97,
+          "column": 77,
           "line": 1,
         },
         "start": Position {
@@ -169,22 +111,80 @@ Node {
       "start": 58,
       "type": "ObjectProperty",
       "value": Node {
-        "end": 97,
+        "end": 77,
+        "extra": Object {
+          "raw": "\\"10px\\"",
+          "rawValue": "10px",
+        },
+        "loc": SourceLocation {
+          "end": Position {
+            "column": 77,
+            "line": 1,
+          },
+          "start": Position {
+            "column": 71,
+            "line": 1,
+          },
+        },
+        "start": 71,
+        "type": "StringLiteral",
+        "value": "10px",
+      },
+    },
+    Node {
+      "computed": false,
+      "end": 117,
+      "key": Node {
+        "end": 95,
+        "extra": Object {
+          "raw": "\\"WebitTransition\\"",
+          "rawValue": "WebitTransition",
+        },
+        "loc": SourceLocation {
+          "end": Position {
+            "column": 95,
+            "line": 1,
+          },
+          "start": Position {
+            "column": 78,
+            "line": 1,
+          },
+        },
+        "start": 78,
+        "type": "StringLiteral",
+        "value": "WebitTransition",
+      },
+      "loc": SourceLocation {
+        "end": Position {
+          "column": 117,
+          "line": 1,
+        },
+        "start": Position {
+          "column": 78,
+          "line": 1,
+        },
+      },
+      "method": false,
+      "shorthand": false,
+      "start": 78,
+      "type": "ObjectProperty",
+      "value": Node {
+        "end": 117,
         "extra": Object {
           "raw": "\\"opacity 1s ease-out\\"",
           "rawValue": "opacity 1s ease-out",
         },
         "loc": SourceLocation {
           "end": Position {
-            "column": 97,
+            "column": 117,
             "line": 1,
           },
           "start": Position {
-            "column": 76,
+            "column": 96,
             "line": 1,
           },
         },
-        "start": 76,
+        "start": 96,
         "type": "StringLiteral",
         "value": "opacity 1s ease-out",
       },

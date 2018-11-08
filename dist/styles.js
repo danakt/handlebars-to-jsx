@@ -13,7 +13,7 @@ exports.createStyleObject = function (style) {
     var styleObject = {};
     var stylePropsList = style.split(';');
     for (var i = 0; i < stylePropsList.length; i++) {
-        var entry = stylePropsList[i].trim().split(':');
+        var entry = stylePropsList[i].trim().split(/:(.+)/);
         if (entry.length < 2) {
             continue;
         }
