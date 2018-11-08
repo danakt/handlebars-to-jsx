@@ -10,7 +10,7 @@ describe('styles', () => {
   test('should create style object from style string', () => {
     expect(
       createStyleObject(
-        "background-image: url('image.png'); margin-left: 10px;   -webit-transition: opacity 1s ease-out"
+        "background-image: url('image.png'); margin-left: 10px;   -webit-transition: opacity 1s ease-out;"
       )
     ).toEqual({
       backgroundImage: "url('image.png')",
@@ -22,7 +22,7 @@ describe('styles', () => {
   test('should create ast tree of style object from style string', () => {
     expect(
       parseStyleString(
-        "background-image: url('image.png'); margin-left: 10px;   -webit-transition: opacity 1s ease-out"
+        "background-image: url('image.png'); margin-left: 10px;   -webit-transition: opacity 1s ease-out;"
       )
     ).toMatchSnapshot()
   })
