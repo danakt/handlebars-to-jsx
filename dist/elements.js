@@ -19,8 +19,9 @@ exports.createFragment = function (children, attributes) {
  * Coverts AttrNode to JSXAttribute
  */
 exports.createAttribute = function (attrNode) {
-    // Unsupported attribute
+    // Converting "attribute-name" to "attributeName"
     var reactAttrName = convertHTMLAttribute(attrNode.name);
+    // Validate the attribute name
     if (!/^[_\-A-z0-9]+$/.test(reactAttrName)) {
         return null;
     }
@@ -51,7 +52,7 @@ exports.createAttribute = function (attrNode) {
  */
 exports.convertElement = function (node) {
     var tagName = Babel.jsxIdentifier(node.tag);
-    var attributes = node.attributes.map(function (item) { return exports.createAttribute(item); }).filter(Boolean);
+    var attributes = node.attributes.map(function (item) { return exports.createAttribute(item); }).filter(function (item) { return !!item; });
     var isElementSelfClosing = node.selfClosing || isSelfClosing(node.tag);
     var children = expressions_1.createChildren(node.children);
     return Babel.jsxElement(Babel.jsxOpeningElement(tagName, attributes, isElementSelfClosing), Babel.jsxClosingElement(tagName), isElementSelfClosing ? [] : children, isElementSelfClosing);

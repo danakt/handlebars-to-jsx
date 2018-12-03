@@ -27,9 +27,10 @@ export const createFragment = (
  * Coverts AttrNode to JSXAttribute
  */
 export const createAttribute = (attrNode: Glimmer.AttrNode): Babel.JSXAttribute | null => {
-  // Unsupported attribute
+  // Converting "attribute-name" to "attributeName"
   const reactAttrName = convertHTMLAttribute(attrNode.name)
 
+  // Validate the attribute name
   if (!/^[_\-A-z0-9]+$/.test(reactAttrName)) {
     return null
   }
@@ -68,7 +69,7 @@ export const createAttribute = (attrNode: Glimmer.AttrNode): Babel.JSXAttribute 
  */
 export const convertElement = (node: Glimmer.ElementNode): Babel.JSXElement => {
   const tagName = Babel.jsxIdentifier(node.tag)
-  const attributes = node.attributes.map(item => createAttribute(item)).filter(Boolean) as Babel.JSXAttribute[]
+  const attributes = node.attributes.map(item => createAttribute(item)).filter(item => !!item) as Babel.JSXAttribute[]
   const isElementSelfClosing = node.selfClosing || isSelfClosing(node.tag)
   const children = createChildren(node.children)
 
