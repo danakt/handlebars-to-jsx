@@ -51,7 +51,18 @@ exports.resolveElementChild = function (statement) {
         }
         // If it expression, create a expression container
         default: {
-            return Babel.jsxExpressionContainer(exports.resolveStatement(statement));
+            var resolved = exports.resolveStatement(statement);
+            switch (resolved.type) {
+                // Return if it is resolved to JSX
+                case 'JSXText':
+                case 'JSXElement':
+                case 'JSXExpressionContainer': {
+                    return resolved;
+                }
+                default: {
+                    return Babel.jsxExpressionContainer(resolved);
+                }
+            }
         }
     }
 };

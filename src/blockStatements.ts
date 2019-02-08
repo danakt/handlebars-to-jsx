@@ -17,10 +17,51 @@ export const resolveBlockStatement = (blockStatement: Glimmer.BlockStatement) =>
       return createEachStatement(blockStatement)
     }
 
+    // TODO: generalize
+    case 'linkTo': {
+      return createLinkStatement(blockStatement)
+    }
+
     default: {
       throw new Error(`Unexpected ${blockStatement.path.original} statement`)
     }
   }
+}
+
+/**
+ * Creates a custom linkTo statement
+ * 
+ * HBS in
+ * {{#linkTo '/destination' '' 'btn' '' }}
+ *   <i class='zp-icon zp-icon-arrow-back'></i> Back to Giving
+ * {{/linkTo}}
+ *
+ * React out
+ * <Link href='/destination' className='btn'>
+ *   <i class='zp-icon zp-icon-arrow-back'></i> Back to Giving
+ * </Link>
+ */
+
+
+export const createLinkStatement = (blockStatement: Glimmer.BlockStatement) => {
+  const { program, params } = blockStatement;
+  const href = params[0] && params[0].value
+  const className = params[2] && params[2].value
+
+  const hrefAttribute = Babel.jsxAttribute(Babel.jsxIdentifier('href'), Babel.stringLiteral(href))
+  const classNameAttribute = Babel.jsxAttribute(Babel.jsxIdentifier('className'), Babel.stringLiteral(className))
+
+  const children = createRootChildren(program.body);
+  const textChild = Babel.jsxText(children.value)
+
+  const identifier = Babel.jsxIdentifier('Link');
+  // TODO: return elementnode?
+  return Babel.jsxElement(
+    Babel.jsxOpeningElement(identifier, [hrefAttribute, classNameAttribute], false),
+    Babel.jsxClosingElement(identifier),
+    [textChild], // createRootChildren(program.body)
+    false
+  )
 }
 
 /**

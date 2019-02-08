@@ -15,10 +15,43 @@ exports.resolveBlockStatement = function (blockStatement) {
         case 'each': {
             return exports.createEachStatement(blockStatement);
         }
+        case 'linkTo': {
+            return exports.createLinkStatement(blockStatement);
+        }
         default: {
             throw new Error("Unexpected " + blockStatement.path.original + " statement");
         }
     }
+};
+/**
+ * Creates a custom linkTo statement
+ */
+// HBS
+// {{#linkTo 'javascript:void(0)' '' 'btn back-to-giving' '' }}
+//   <i class='zp-icon zp-icon-arrow-back'></i> Back to Giving
+// {{/linkTo}}
+//
+// React
+// <Link href={javascript:void(0)}>
+//   <i class='zp-icon zp-icon-arrow-back'></i> Back to Giving
+// </Link>
+exports.createLinkStatement = function (blockStatement) {
+    var program = blockStatement.program, params = blockStatement.params;
+    // console.log(params)
+    // console.log(program.body)
+    var href = params[0] && params[0].value;
+    var text = params[1] && params[1].value;
+    var className = params[2] && params[2].value;
+    var attributesParam = params[4] && params[4].value;
+    var hrefAttribute = Babel.jsxAttribute(Babel.jsxIdentifier('href'), Babel.stringLiteral(href));
+    var classNameAttribute = Babel.jsxAttribute(Babel.jsxIdentifier('className'), Babel.stringLiteral(className));
+    // this is a mess!
+    var children = expressions_1.createRootChildren(program.body);
+    var textChild = Babel.jsxText(children.value);
+    var identifier = Babel.jsxIdentifier('Link');
+    // TODO: return elementnode?
+    return Babel.jsxElement(Babel.jsxOpeningElement(identifier, [hrefAttribute, classNameAttribute], false), Babel.jsxClosingElement(identifier), [textChild], // createRootChildren(program.body)
+    false);
 };
 /**
  * Creates condition statement
