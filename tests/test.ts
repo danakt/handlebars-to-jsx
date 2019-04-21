@@ -147,6 +147,18 @@ describe('block statements', () => {
       )
     })
 
+    test('should convert condition unless-then ', () => {
+      expect(compile('<div>{{#unless variable}}<div/>{{/unless}}</div>')).toBe(
+        recompile('props => <div>{!Boolean(props.variable) && <div />}</div>;')
+      )
+    })
+
+    test('should convert condition unless-then-else ', () => {
+      expect(compile('<div>{{#unless variable}}<div/>{{else}}<span/>{{/unless}}</div>')).toBe(
+        recompile('props => <div>{!Boolean(props.variable) ? <div /> : <span />}</div>;')
+      )
+    })
+
     test('should wrap multiple block children into fragment', () => {
       expect(compile('<div>{{#if variable}}<div/><span/>{{/if}}</div>')).toBe(
         recompile('props => <div>{Boolean(props.variable) && <React.Fragment><div /><span /></React.Fragment>}</div>;')
