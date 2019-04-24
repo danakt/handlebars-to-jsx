@@ -3,6 +3,7 @@ import * as Babel                                                          from 
 import { resolveExpression, createRootChildren, createPath, appendToPath } from './expressions'
 import { createFragment }                                                  from './elements'
 import { DEFAULT_NAMESPACE_NAME, DEFAULT_KEY_NAME }                        from './contants'
+import { truncateSync } from 'fs';
 
 /**
  * Resolves block type
@@ -10,7 +11,11 @@ import { DEFAULT_NAMESPACE_NAME, DEFAULT_KEY_NAME }                        from 
 export const resolveBlockStatement = (blockStatement: Glimmer.BlockStatement) => {
   switch (blockStatement.path.original) {
     case 'if': {
-      return createConditionStatement(blockStatement)
+      return createConditionStatement(blockStatement, false)
+    }
+
+    case 'unless': {
+      return createConditionStatement(blockStatement, true)
     }
 
     case 'each': {
@@ -27,13 +32,18 @@ export const resolveBlockStatement = (blockStatement: Glimmer.BlockStatement) =>
  * Creates condition statement
  */
 export const createConditionStatement = (
-  blockStatement: Glimmer.BlockStatement
+  blockStatement: Glimmer.BlockStatement,
+  invertCondition: boolean
 ): Babel.ConditionalExpression | Babel.LogicalExpression => {
   const { program, inverse } = blockStatement
-  const boolCondSubject: Babel.CallExpression = Babel.callExpression(
+  let boolCondSubject: Babel.CallExpression | Babel.UnaryExpression = Babel.callExpression(
     Babel.identifier('Boolean'),
     [resolveExpression(blockStatement.params[0])] //
   )
+
+  if (invertCondition) {
+    boolCondSubject = Babel.unaryExpression('!', boolCondSubject)
+  }
 
   if (inverse == null) {
     // Logical expression

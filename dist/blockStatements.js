@@ -10,7 +10,10 @@ var contants_1 = require("./contants");
 exports.resolveBlockStatement = function (blockStatement) {
     switch (blockStatement.path.original) {
         case 'if': {
-            return exports.createConditionStatement(blockStatement);
+            return exports.createConditionStatement(blockStatement, false);
+        }
+        case 'unless': {
+            return exports.createConditionStatement(blockStatement, true);
         }
         case 'each': {
             return exports.createEachStatement(blockStatement);
@@ -23,10 +26,13 @@ exports.resolveBlockStatement = function (blockStatement) {
 /**
  * Creates condition statement
  */
-exports.createConditionStatement = function (blockStatement) {
+exports.createConditionStatement = function (blockStatement, invertCondition) {
     var program = blockStatement.program, inverse = blockStatement.inverse;
     var boolCondSubject = Babel.callExpression(Babel.identifier('Boolean'), [expressions_1.resolveExpression(blockStatement.params[0])] //
     );
+    if (invertCondition) {
+        boolCondSubject = Babel.unaryExpression('!', boolCondSubject);
+    }
     if (inverse == null) {
         // Logical expression
         // {Boolean(variable) && <div />}
