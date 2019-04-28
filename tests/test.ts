@@ -185,6 +185,12 @@ describe('block statements', () => {
       )
     })
 
+    test('siblings each block statements with path expression - no component', () => {
+      expect(compile('<div>{{#each list}}<div>{{name}}</div>{{/each}}{{#each list}}<div>{{name}}</div>{{/each}}</div>', false)).toBe(
+        '<div>{list.map((item, i) => <div key={i}>{item.name}</div>)}{list.map((item, i) => <div key={i}>{item.name}</div>)}</div>;'
+      )
+    })
+
     test('should wrap multiple block children into fragment with keys', () => {
       expect(compile('<div>{{#each list}}<div /><span /> Text{{/each}}</div>')).toBe(
         'props => <div>{props.list.map((item, i) => <React.Fragment key={i}><div /><span /> Text</React.Fragment>)}</div>;'
