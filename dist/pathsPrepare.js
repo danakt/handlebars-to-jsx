@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var syntax_1 = require("@glimmer/syntax");
-var hash = require("object-hash");
 var contants_1 = require("./contants");
 /**
  * Checks is each statement
@@ -23,7 +22,6 @@ var createNamespaceStack = function () {
         push: function (item) {
             return namespaces.push({
                 node: item.node,
-                hash: hash(item.node),
                 name: item.name || contants_1.DEFAULT_NAMESPACE_NAME
             });
         },
@@ -57,7 +55,7 @@ exports.prepareProgramPaths = function (program, isComponent) {
             },
             exit: function (node) {
                 // Exit from namespace
-                if (namespaces.length > 0 && hash(node) === namespaces.head().hash) {
+                if (namespaces.length > 0 && node === namespaces.head().node) {
                     namespaces.pop();
                 }
             }
