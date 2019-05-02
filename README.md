@@ -14,13 +14,13 @@ yarn add handlebars-to-jsx
 
 ## Usage
 
-The package has only one method `compile`. You can import it by following way:
+The package only has one method `compile`. You can import it the following way:
 
 ```js
 import { compile } from 'handlebars-to-jsx'
 ```
 
-The method has following syntax:
+The method has the following syntax:
 
 ```
 compile(input[, options])
@@ -29,16 +29,15 @@ compile(input[, options])
 - `input`  
   The Handlebars template which should be converted to JSX code.
 - `options` _Optional_  
-  Options is an optional argument and can has the following properties:
+  Options is optional and can have the following properties:
   - `isComponent` _Optional_  
-    The default is `true`. Should return JSX code wrapped to a function component.
+    The default is `true`. Should return JSX code wrapped as a function component.
   - `isModule` _Optional_  
-    The default is `false`. Should return generated code exported by default.
-    <!-- Should be compiled as  -->
+    The default is `false`. Should return generated code exported as default.
   - `includeImport` _Optional_  
     The default is `false`. Should return generated code with React import at the top. Requires `isModule` to be true.
 
-Use it for simple converting Handlebars template to JSX code:
+Use it for simply converting Handlebars template to JSX code:
 
 ```js
 compile('<div>{{variable}}</div>')
@@ -47,7 +46,7 @@ compile('<div>{{variable}}</div>')
 // props => <div>{props.variable}</div>
 ```
 
-By default the `compile` function returns function component. You can convert Handlebars template to JSX without wrapping to arrow function. In this variant, `props` is not added to the path of variables.
+By default the `compile` function returns a function component. You can convert Handlebars templates to JSX without wrapping them as arrow functions. In this variant, `props` is not added to the path of variables.
 
 ```js
 compile('<div>{{variable}}</div>', { isComponent: false })
@@ -56,7 +55,7 @@ compile('<div>{{variable}}</div>', { isComponent: false })
 // <div>{variable}</div>
 ```
 
-Also, you can get exported by default component:
+Also, you can have the component exported as default:
 
 ```js
 compile('<div>{{variable}}</div>', { isModule: true })
@@ -65,7 +64,7 @@ compile('<div>{{variable}}</div>', { isModule: true })
 // export default props => <div>{props.variable}</div>
 ```
 
-Also, you can import react:
+Also, react can be imported:
 
 ```js
 compile('<div>{{variable}}</div>', { includeInport: true, isModule: true })
@@ -77,7 +76,7 @@ compile('<div>{{variable}}</div>', { includeInport: true, isModule: true })
 
 ## Code formatting
 
-The output code creates from AST tree, so it's unformatted by default. You can use tools like [Prettier](https://prettier.io/docs/en/api.html) to format code:
+The output code is created from an AST tree, so it's unformatted by default. You can use tools like [Prettier](https://prettier.io/docs/en/api.html) to format the code:
 
 ```js
 import { compile } from 'handlebars-to-jsx'
@@ -99,7 +98,7 @@ prettier.format(jsxCode, { parser: 'babylon' })
 
 ## Transpilation
 
-If you wanna have code of version JavaScript lower than ES6, or you wanna have the React source JS code without JSX, you can use [babel](https://github.com/babel/babel):
+If you want to have code lower than ES6, or you want to have the React source JS code without JSX, you can use [babel](https://github.com/babel/babel):
 
 ```js
 import { compile } from 'handlebars-to-jsx'

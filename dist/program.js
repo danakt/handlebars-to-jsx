@@ -7,7 +7,9 @@ var componentCreator_1 = require("./componentCreator");
 /**
  * Creates program statement
  * @param hbsProgram The Handlebars program (root AST node)
- * @param isModule Should output code be exported by default
+ * @param isComponent Should return JSX code wrapped as a function component
+ * @param isModule Should return generated code exported as default
+ * @param includeImport Should include react import
  */
 exports.createProgram = function (hbsProgram, isComponent, isModule, includeImport) {
     pathsPrepare_1.prepareProgramPaths(hbsProgram, isComponent);
