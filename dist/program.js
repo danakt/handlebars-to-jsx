@@ -9,10 +9,13 @@ var componentCreator_1 = require("./componentCreator");
  * @param hbsProgram The Handlebars program (root AST node)
  * @param isModule Should output code be exported by default
  */
-exports.createProgram = function (hbsProgram, isComponent, isModule) {
+exports.createProgram = function (hbsProgram, isComponent, isModule, includeImport) {
     pathsPrepare_1.prepareProgramPaths(hbsProgram, isComponent);
+    var reactImport = Babel.importDeclaration([Babel.importDefaultSpecifier(Babel.identifier('React'))], Babel.stringLiteral('react'));
     var componentBody = expressions_1.createRootChildren(hbsProgram.body);
     var expression = isComponent ? componentCreator_1.createComponent(componentBody) : componentBody;
     var statement = isModule ? Babel.exportDefaultDeclaration(expression) : Babel.expressionStatement(expression);
-    return Babel.program([statement]);
+    var directives = [statement];
+    includeImport && directives.unshift(reactImport);
+    return Babel.program(directives);
 };

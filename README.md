@@ -35,6 +35,8 @@ compile(input[, options])
   - `isModule` _Optional_  
     The default is `false`. Should return generated code exported by default.
     <!-- Should be compiled as  -->
+  - `includeImport` _Optional_  
+    The default is `false`. Should return generated code with React import at the top. Requires `isModule` to be true.
 
 Use it for simple converting Handlebars template to JSX code:
 
@@ -60,6 +62,16 @@ Also, you can get exported by default component:
 compile('<div>{{variable}}</div>', { isModule: true })
 
 // Result
+// export default props => <div>{props.variable}</div>
+```
+
+Also, you can import react:
+
+```js
+compile('<div>{{variable}}</div>', { includeInport: true, isModule: true })
+
+// Result
+// import React from "react";
 // export default props => <div>{props.variable}</div>
 ```
 

@@ -11,8 +11,9 @@ function compile(hbsCode, options) {
     }
     var isComponent = !!options.isComponent;
     var isModule = !!options.isModule;
+    var includeImport = !!options.includeImport && isModule;
     var glimmerProgram = syntax_1.preprocess(hbsCode);
-    var babelProgram = program_1.createProgram(glimmerProgram, isComponent, isModule);
+    var babelProgram = program_1.createProgram(glimmerProgram, isComponent, isModule, includeImport);
     return generator_1.default(babelProgram).code;
 }
 exports.compile = compile;

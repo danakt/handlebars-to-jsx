@@ -5,6 +5,7 @@
  * @param hbsCode Handlebars code to JSX
  * @param options Compilation options
  * @param [isComponent] Should wraps code to component
+ * @param [options.includeImport] Should include react import
  * @returns JSX code
  */
 export function compile(hbsCode: string, isComponent?: boolean): string
@@ -17,4 +18,4 @@ export function compile(hbsCode: string, isComponent?: boolean): string
  * @param [options.isModule] Should be export code by default
  * @returns JSX code
  */
-export function compile(hbsCode: string, options?: { isComponent?: boolean; isModule?: boolean }): string
+export function compile(hbsCode: string, options?: { isComponent?: boolean; isModule?: boolean, includeImport?: boolean }): string
