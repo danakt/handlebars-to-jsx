@@ -1,6 +1,6 @@
 import { AST as Glimmer, traverse } from '@glimmer/syntax'
 import * as hash                    from 'object-hash'
-import { DEFAULT_NAMESPACE_NAME }   from './contants'
+import { DEFAULT_NAMESPACE_NAME }   from './constants'
 
 /**
  * Checks is each statement
