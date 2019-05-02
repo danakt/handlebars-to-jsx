@@ -13,7 +13,14 @@ import { createProgram } from './program'
  * @param [options.includeImport] Should include react import
  */
 export function compile(hbsCode: string, isComponent?: boolean): string
-export function compile(hbsCode: string, options?: { isComponent?: boolean; isModule?: boolean, includeImport?: boolean }): string
+export function compile(
+  hbsCode: string,
+  options?: {
+    isComponent?: boolean
+    isModule?: boolean
+    includeImport?: boolean
+  }
+): string
 export function compile(
   hbsCode: string,
   options: boolean | { isComponent?: boolean; isModule?: boolean, includeImport?: boolean } = true
@@ -24,7 +31,7 @@ export function compile(
 
   const isComponent = !!options.isComponent
   const isModule = !!options.isModule
-  const includeImport = !!options.includeImport && isModule;
+  const includeImport = !!options.includeImport && isModule
 
   const glimmerProgram = preprocess(hbsCode)
   const babelProgram: Babel.Program = createProgram(glimmerProgram, isComponent, isModule, includeImport)

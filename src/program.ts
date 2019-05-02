@@ -11,16 +11,28 @@ import { createComponent }     from './componentCreator'
  * @param isModule Should return generated code exported as default
  * @param includeImport Should include react import
  */
-export const createProgram = (hbsProgram: Glimmer.Program, isComponent: boolean, isModule: boolean, includeImport: boolean): Babel.Program => {
+export const createProgram = (
+  hbsProgram: Glimmer.Program,
+  isComponent: boolean,
+  isModule: boolean,
+  includeImport: boolean
+): Babel.Program => {
   prepareProgramPaths(hbsProgram, isComponent)
 
-  const reactImport = Babel.importDeclaration([Babel.importDefaultSpecifier(Babel.identifier('React'))], Babel.stringLiteral('react'));
+  const reactImport = Babel.importDeclaration(
+    [Babel.importDefaultSpecifier(Babel.identifier('React'))],
+    Babel.stringLiteral('react')
+  )
   const componentBody = createRootChildren(hbsProgram.body)
-  const expression = isComponent ? createComponent(componentBody) : componentBody
-  const statement = isModule ? Babel.exportDefaultDeclaration(expression) : Babel.expressionStatement(expression)
+  const expression = isComponent
+    ? createComponent(componentBody)
+    : componentBody
+  const statement = isModule
+    ? Babel.exportDefaultDeclaration(expression)
+    : Babel.expressionStatement(expression)
 
-  const directives: Babel.Statement[] = [statement];
-  includeImport && directives.unshift(reactImport);
+  const directives: Babel.Statement[] = [statement]
+  includeImport && directives.unshift(reactImport)
 
   return Babel.program(directives)
 }
