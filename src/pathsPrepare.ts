@@ -1,5 +1,4 @@
 import { AST as Glimmer, traverse } from '@glimmer/syntax'
-import * as hash                    from 'object-hash'
 import { DEFAULT_NAMESPACE_NAME }   from './contants'
 
 /**
@@ -12,7 +11,7 @@ const isEachStatement = (node: Glimmer.Node): node is Glimmer.BlockStatement =>
  * Creates stack of namespaces
  */
 const createNamespaceStack = () => {
-  const namespaces: { node: Glimmer.Node; name: string; hash: string }[] = []
+  const namespaces: { node: Glimmer.Node; name: string }[] = []
 
   return {
     // Getter of length
@@ -24,7 +23,6 @@ const createNamespaceStack = () => {
     push: (item: { node: Glimmer.Node; name?: string }) =>
       namespaces.push({
         node: item.node,
-        hash: hash(item.node),
         name: item.name || DEFAULT_NAMESPACE_NAME
       }),
 
@@ -64,7 +62,7 @@ export const prepareProgramPaths = (program: Glimmer.Program, isComponent: boole
       },
       exit(node: Glimmer.Node) {
         // Exit from namespace
-        if (namespaces.length > 0 && hash(node) === namespaces.head().hash) {
+        if (namespaces.length > 0 && node === namespaces.head().node) {
           namespaces.pop()
         }
       }

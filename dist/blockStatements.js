@@ -28,8 +28,7 @@ exports.resolveBlockStatement = function (blockStatement) {
  */
 exports.createConditionStatement = function (blockStatement, invertCondition) {
     var program = blockStatement.program, inverse = blockStatement.inverse;
-    var boolCondSubject = Babel.callExpression(Babel.identifier('Boolean'), [expressions_1.resolveExpression(blockStatement.params[0])] //
-    );
+    var boolCondSubject = Babel.callExpression(Babel.identifier('Boolean'), [expressions_1.resolveExpression(blockStatement.params[0])]);
     if (invertCondition) {
         boolCondSubject = Babel.unaryExpression('!', boolCondSubject);
     }
