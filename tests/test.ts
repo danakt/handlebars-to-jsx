@@ -186,7 +186,12 @@ describe('block statements', () => {
     })
 
     test('siblings each block statements with path expression - no component', () => {
-      expect(compile('<div>{{#each list}}<div>{{name}}</div>{{/each}}{{#each list}}<div>{{name}}</div>{{/each}}</div>', false)).toBe(
+      expect(
+        compile(
+          '<div>{{#each list}}<div>{{name}}</div>{{/each}}{{#each list}}<div>{{name}}</div>{{/each}}</div>',
+          false
+        )
+      ).toBe(
         '<div>{list.map((item, i) => <div key={i}>{item.name}</div>)}{list.map((item, i) => <div key={i}>{item.name}</div>)}</div>;'
       )
     })
@@ -201,14 +206,20 @@ describe('block statements', () => {
 
 describe('include react import', () => {
   test('with isModule true', () => {
-    expect(compile('<div></div>', {isComponent: true, isModule: true, includeImport: true})).toBe('import React from "react";\nexport default (props => <div></div>);')
+    expect(compile('<div></div>', { isComponent: true, isModule: true, includeImport: true })).toBe(
+      'import React from "react";\nexport default (props => <div></div>);'
+    )
   })
 
   test('with isModule false', () => {
-    expect(compile('<div></div>', {isComponent: true, isModule: false, includeImport: true})).toBe('props => <div></div>;')
+    expect(compile('<div></div>', { isComponent: true, isModule: false, includeImport: true })).toBe(
+      'props => <div></div>;'
+    )
   })
 
   test('with isComponent false', () => {
-    expect(compile('<div></div>', {isComponent: false, isModule: true, includeImport: true})).toBe('import React from "react";\nexport default <div></div>;')
+    expect(compile('<div></div>', { isComponent: false, isModule: true, includeImport: true })).toBe(
+      'import React from "react";\nexport default <div></div>;'
+    )
   })
 })

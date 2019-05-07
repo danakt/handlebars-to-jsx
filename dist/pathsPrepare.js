@@ -1,9 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var syntax_1 = require("@glimmer/syntax");
-var hash = require("object-hash");
 var constants_1 = require("./constants");
-
 /**
  * Checks is each statement
  */
@@ -24,7 +22,6 @@ var createNamespaceStack = function () {
         push: function (item) {
             return namespaces.push({
                 node: item.node,
-                hash: hash(item.node),
                 name: item.name || constants_1.DEFAULT_NAMESPACE_NAME
             });
         },
