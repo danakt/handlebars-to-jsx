@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var syntax_1 = require("@glimmer/syntax");
 var hash = require("object-hash");
 var constants_1 = require("./constants");
+
 /**
  * Checks is each statement
  */
@@ -57,7 +58,7 @@ exports.prepareProgramPaths = function (program, isComponent) {
             },
             exit: function (node) {
                 // Exit from namespace
-                if (namespaces.length > 0 && hash(node) === namespaces.head().hash) {
+                if (namespaces.length > 0 && node === namespaces.head().node) {
                     namespaces.pop();
                 }
             }
