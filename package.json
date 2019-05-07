@@ -1,6 +1,6 @@
 {
   "name": "handlebars-to-jsx",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "author": "Danakt Frost <danakt@protonmail.com>",
   "license": "MIT",
   "description": "Converts Handlebars template to React component",
