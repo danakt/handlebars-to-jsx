@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Babel = require("@babel/types");
 var expressions_1 = require("./expressions");
 var elements_1 = require("./elements");
-var contants_1 = require("./contants");
+var constants_1 = require("./constants");
 /**
  * Resolves block type
  */
@@ -56,7 +56,7 @@ exports.createEachStatement = function (blockStatement) {
         ? elements_1.createFragment([Babel.jsxExpressionContainer(mapCallbackChildren)])
         : mapCallbackChildren;
     // Adding the "key" attribute to child element
-    wrappedCallbackChildren.openingElement.attributes.push(Babel.jsxAttribute(Babel.jsxIdentifier('key'), Babel.jsxExpressionContainer(Babel.identifier(contants_1.DEFAULT_KEY_NAME))));
-    var mapCallback = Babel.arrowFunctionExpression([Babel.identifier(contants_1.DEFAULT_NAMESPACE_NAME), Babel.identifier(contants_1.DEFAULT_KEY_NAME)], wrappedCallbackChildren);
+    wrappedCallbackChildren.openingElement.attributes.push(Babel.jsxAttribute(Babel.jsxIdentifier('key'), Babel.jsxExpressionContainer(Babel.identifier(constants_1.DEFAULT_KEY_NAME))));
+    var mapCallback = Babel.arrowFunctionExpression([Babel.identifier(constants_1.DEFAULT_NAMESPACE_NAME), Babel.identifier(constants_1.DEFAULT_KEY_NAME)], wrappedCallbackChildren);
     return Babel.callExpression(iterator, [mapCallback]);
 };

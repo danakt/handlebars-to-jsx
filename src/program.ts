@@ -7,14 +7,32 @@ import { createComponent }     from './componentCreator'
 /**
  * Creates program statement
  * @param hbsProgram The Handlebars program (root AST node)
- * @param isModule Should output code be exported by default
+ * @param isComponent Should return JSX code wrapped as a function component
+ * @param isModule Should return generated code exported as default
+ * @param includeImport Should include react import
  */
-export const createProgram = (hbsProgram: Glimmer.Program, isComponent: boolean, isModule: boolean): Babel.Program => {
+export const createProgram = (
+  hbsProgram: Glimmer.Program,
+  isComponent: boolean,
+  isModule: boolean,
+  includeImport: boolean
+): Babel.Program => {
   prepareProgramPaths(hbsProgram, isComponent)
 
+  const reactImport = Babel.importDeclaration(
+    [Babel.importDefaultSpecifier(Babel.identifier('React'))],
+    Babel.stringLiteral('react')
+  )
   const componentBody = createRootChildren(hbsProgram.body)
-  const expression = isComponent ? createComponent(componentBody) : componentBody
-  const statement = isModule ? Babel.exportDefaultDeclaration(expression) : Babel.expressionStatement(expression)
+  const expression = isComponent
+    ? createComponent(componentBody)
+    : componentBody
+  const statement = isModule
+    ? Babel.exportDefaultDeclaration(expression)
+    : Babel.expressionStatement(expression)
 
-  return Babel.program([statement])
+  const directives: Babel.Statement[] = [statement]
+  includeImport && directives.unshift(reactImport)
+
+  return Babel.program(directives)
 }
