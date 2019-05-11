@@ -67,7 +67,7 @@ compile('<div>{{variable}}</div>', { isModule: true })
 Also, react can be imported:
 
 ```js
-compile('<div>{{variable}}</div>', { includeInport: true, isModule: true })
+compile('<div>{{variable}}</div>', { includeImport: true, isModule: true })
 
 // Result
 // import React from "react";
