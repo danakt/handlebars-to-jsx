@@ -109,8 +109,8 @@ describe('element attributes', () => {
   })
 
   test('should convert the "styles" string to stylesObject', () => {
-    expect(compile('<div style="background-image: url(\'image.png\'); margin-left: 10px" />', false)).toBe(
-      recompile('<div style={{ "backgroundImage": "url(\'image.png\')", "marginLeft": "10px" }} />')
+    expect(compile('<div style="background-image: url(\'image.png\'); margin-left: 10px; width: {{some.percentage}}px; margin-top: 10px; padding: {{padding}}px" />', false)).toBe(
+      recompile('<div style={{ "backgroundImage": "url(\'image.png\')", "marginLeft": "10px", "width": `${some.percentage}px`, "marginTop": "10px", "padding": `${padding}px` }} />')
     )
   })
 })
