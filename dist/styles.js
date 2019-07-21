@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var parser_1 = require("@babel/parser");
+var syntax_1 = require("@glimmer/syntax");
 /**
  * Transforms "prop-name" to "propName"
  * @param propName
@@ -32,34 +33,35 @@ exports.parseStyleString = function (style) { return parser_1.parseExpression(JS
  */
 exports.parseStyleConcat = function (concatStatement) {
     var styleObjectExpressionString = '{';
-    var lastStyleAttr = '';
-    var lastVariableValue = '';
-    concatStatement.parts.forEach(function (part) {
-        if (part.type === 'TextNode') {
-            var stylePropList_1 = part.chars.split(';');
-            stylePropList_1.forEach(function (styleProp) {
-                var ruleSplit = styleProp.split(':').map(function (str) { return str.trim(); });
-                // a part of the value recently found in MustacheStatement
-                if (ruleSplit.length === 1) {
-                    styleObjectExpressionString += "\"" + exports.camelizePropName(lastStyleAttr.trim()) + "\": ";
-                    styleObjectExpressionString += '`${' + lastVariableValue + '}' + stylePropList_1[0] + '`,';
-                    lastStyleAttr = '';
-                    lastVariableValue = '';
-                }
-                if (ruleSplit.length === 2) {
-                    var styleAttr = ruleSplit[0], styleValue = ruleSplit[1];
-                    if (!!styleAttr && !!styleValue) {
-                        styleObjectExpressionString += "\"" + exports.camelizePropName(styleAttr.trim()) + "\": \"" + styleValue + "\",";
-                    }
-                    if (!!styleAttr && !styleValue) {
-                        lastStyleAttr = styleAttr;
-                    }
-                }
-            });
+    var fullStatement = concatStatement.parts.reduce(function (statement, currentPart) {
+        var currentStatement = '';
+        if (currentPart.type === 'TextNode') {
+            currentStatement = currentPart.chars;
         }
-        if (part.type === 'MustacheStatement' && part.path.type === 'PathExpression') {
-            lastVariableValue = part.path.parts.join('.');
+        if (currentPart.type === 'MustacheStatement' && currentPart.path.type === 'PathExpression') {
+            currentStatement = "{{" + currentPart.path.parts.join('.') + "}}";
         }
+        return "" + statement + currentStatement;
+    }, '');
+    fullStatement.split(';').forEach(function (cssRule) {
+        var _a = cssRule.split(':').map(function (str) { return str.trim(); }), prop = _a[0], value = _a[1];
+        var processedValue = syntax_1.preprocess(value);
+        var finalValue = "\"" + value + "\"";
+        if (processedValue.body.find(function (b) { return b.type === 'MustacheStatement'; })) {
+            finalValue = processedValue.body.reduce(function (statement, current) {
+                var currentStatement = '';
+                if (current.type === 'TextNode') {
+                    currentStatement = current.chars;
+                }
+                if (current.type === 'MustacheStatement' && current.path.type === 'PathExpression') {
+                    currentStatement = '${' + current.path.parts.join('.') + '}';
+                }
+                return "" + statement + currentStatement;
+            }, '');
+            finalValue = "`" + finalValue + "`";
+        }
+        styleObjectExpressionString += "\"" + exports.camelizePropName(prop) + "\": ";
+        styleObjectExpressionString += finalValue + ",";
     });
     styleObjectExpressionString += '}';
     return parser_1.parseExpression(styleObjectExpressionString);

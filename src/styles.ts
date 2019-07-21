@@ -1,5 +1,6 @@
 import { parseExpression } from '@babel/parser'
 import { ConcatStatement } from '@glimmer/syntax/dist/types/lib/types/nodes';
+import { preprocess } from '@glimmer/syntax';
 
 /**
  * Transforms "prop-name" to "propName"
@@ -41,35 +42,36 @@ export const parseStyleString = (style: string) => parseExpression(JSON.stringif
  */
 export const parseStyleConcat = (concatStatement: ConcatStatement) => {
   let styleObjectExpressionString = '{';
-  let lastStyleAttr = '';
-  let lastVariableValue = '';
-  concatStatement.parts.forEach(part => {
-    if (part.type === 'TextNode') {
-      const stylePropList = part.chars.split(';');
-      stylePropList.forEach(styleProp => {
-        const ruleSplit = styleProp.split(':').map(str => str.trim());
-        // a part of the value recently found in MustacheStatement
-        if (ruleSplit.length === 1) {
-          styleObjectExpressionString += `"${camelizePropName(lastStyleAttr.trim())}": `;
-          styleObjectExpressionString += '`${' + lastVariableValue + '}' + stylePropList[0] + '`,';
-          lastStyleAttr = '';
-          lastVariableValue = '';
-        }
-        if (ruleSplit.length === 2) {
-          const [styleAttr, styleValue] = ruleSplit;
-          if (!!styleAttr && !!styleValue) {
-            styleObjectExpressionString += `"${camelizePropName(styleAttr.trim())}": "${styleValue}",`;
-          }
-          if (!!styleAttr && !styleValue) {
-            lastStyleAttr = styleAttr;
-          }
-        }
-        
-      })
+  const fullStatement = concatStatement.parts.reduce((statement, currentPart) => {
+    let currentStatement = '';
+    if (currentPart.type === 'TextNode') {
+      currentStatement = currentPart.chars;
     }
-    if (part.type === 'MustacheStatement' && part.path.type === 'PathExpression') {
-      lastVariableValue = part.path.parts.join('.');
+    if (currentPart.type === 'MustacheStatement' && currentPart.path.type === 'PathExpression') {
+      currentStatement = `{{${currentPart.path.parts.join('.')}}}`;
     }
+    return `${statement}${currentStatement}`;
+  }, '');
+
+  fullStatement.split(';').forEach(cssRule => {
+    const [prop, value] = cssRule.split(':').map(str => str.trim());
+    const processedValue = preprocess(value);
+    let finalValue = `"${value}"`;
+    if (processedValue.body.find(b => b.type === 'MustacheStatement')) {
+      finalValue = processedValue.body.reduce((statement, current) => {
+        let currentStatement = '';
+        if (current.type === 'TextNode') {
+          currentStatement = current.chars;
+        }
+        if (current.type === 'MustacheStatement' && current.path.type === 'PathExpression') {
+          currentStatement = '${' + current.path.parts.join('.') + '}';
+        }
+        return `${statement}${currentStatement}`;
+      }, '');
+      finalValue = `\`${finalValue}\``;
+    }
+    styleObjectExpressionString += `"${camelizePropName(prop)}": `
+    styleObjectExpressionString += `${finalValue},`
   });
   styleObjectExpressionString += '}';
   return parseExpression(styleObjectExpressionString);
