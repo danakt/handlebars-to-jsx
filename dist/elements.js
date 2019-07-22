@@ -39,6 +39,10 @@ exports.createAttribute = function (attrNode) {
         }
         case 'ConcatStatement': {
             var expression = expressions_1.createConcat(value.parts);
+            if (reactAttrName === 'style') {
+                var styleObjectExpression = styles_1.parseStyleConcat(value);
+                return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(styleObjectExpression));
+            }
             return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(expression));
         }
         default: {

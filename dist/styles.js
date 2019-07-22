@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var parser_1 = require("@babel/parser");
+var syntax_1 = require("@glimmer/syntax");
 /**
  * Transforms "prop-name" to "propName"
  * @param propName
@@ -27,3 +28,41 @@ exports.createStyleObject = function (style) {
  * @param style Styles string
  */
 exports.parseStyleString = function (style) { return parser_1.parseExpression(JSON.stringify(exports.createStyleObject(style))); };
+/**
+ * Create AST tree of style object from style concat
+ */
+exports.parseStyleConcat = function (concatStatement) {
+    var styleObjectExpressionString = '{';
+    var fullStatement = concatStatement.parts.reduce(function (statement, currentPart) {
+        var currentStatement = '';
+        if (currentPart.type === 'TextNode') {
+            currentStatement = currentPart.chars;
+        }
+        if (currentPart.type === 'MustacheStatement' && currentPart.path.type === 'PathExpression') {
+            currentStatement = "{{" + currentPart.path.parts.join('.') + "}}";
+        }
+        return "" + statement + currentStatement;
+    }, '');
+    fullStatement.split(';').forEach(function (cssRule) {
+        var _a = cssRule.split(':').map(function (str) { return str.trim(); }), prop = _a[0], value = _a[1];
+        var processedValue = syntax_1.preprocess(value);
+        var finalValue = "\"" + value + "\"";
+        if (processedValue.body.find(function (b) { return b.type === 'MustacheStatement'; })) {
+            finalValue = processedValue.body.reduce(function (statement, current) {
+                var currentStatement = '';
+                if (current.type === 'TextNode') {
+                    currentStatement = current.chars;
+                }
+                if (current.type === 'MustacheStatement' && current.path.type === 'PathExpression') {
+                    currentStatement = '${' + current.path.parts.join('.') + '}';
+                }
+                return "" + statement + currentStatement;
+            }, '');
+            finalValue = "`" + finalValue + "`";
+        }
+        styleObjectExpressionString += "\"" + exports.camelizePropName(prop) + "\": ";
+        styleObjectExpressionString += finalValue + ",";
+    });
+    styleObjectExpressionString += '}';
+    return parser_1.parseExpression(styleObjectExpressionString);
+};

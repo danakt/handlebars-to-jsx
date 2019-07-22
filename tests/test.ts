@@ -112,6 +112,9 @@ describe('element attributes', () => {
     expect(compile('<div style="background-image: url(\'image.png\'); margin-left: 10px" />', false)).toBe(
       recompile('<div style={{ "backgroundImage": "url(\'image.png\')", "marginLeft": "10px" }} />')
     )
+    expect(compile('<div style="background-image: url(\'{{some.imageSrc}}\'); margin-left: 10px; width: {{some.percentage}}px; margin-top: 10px; text-align: {{textAlign}}" />', false)).toBe(
+      recompile('<div style={{ "backgroundImage": `url(\'${some.imageSrc}\')`, "marginLeft": "10px", "width": `${some.percentage}px`, "marginTop": "10px", "textAlign": `${textAlign}` }} />')
+    )
   })
 })
 
