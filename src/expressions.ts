@@ -9,7 +9,7 @@ import { createComment }                  from './comments'
  * Creates top-level expression or expression which need to wrap to JSX
  * expression container.
  */
-export const resolveStatement = (statement: Glimmer.Statement): Babel.Expression => {
+export const resolveStatement = (statement: Glimmer.Statement) => {
   switch (statement.type) {
     case 'ElementNode': {
       return convertElement(statement)

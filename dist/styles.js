@@ -1,68 +1,34 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var parser_1 = require("@babel/parser");
 var syntax_1 = require("@glimmer/syntax");
+var Babel = require("@babel/types");
+var expressions_1 = require("./expressions");
 /**
  * Transforms "prop-name" to "propName"
  * @param propName
  */
 exports.camelizePropName = function (propName) { return propName.replace(/-([a-z])/g, function (_, $1) { return $1.toUpperCase(); }); };
 /**
- * Converts style string to style object
+ * Create AST tree of style object
  */
-exports.createStyleObject = function (style) {
-    var styleObject = {};
-    var stylePropsList = style.split(';');
-    for (var i = 0; i < stylePropsList.length; i++) {
-        var entry = stylePropsList[i].trim().split(/:(.+)/);
-        if (entry.length < 2) {
-            continue;
-        }
-        var propName = exports.camelizePropName(entry[0].trim());
-        styleObject[propName] = entry[1].trim();
-    }
-    return styleObject;
-};
-/**
- * Creates AST tree of style object from style string
- * @param style Styles string
- */
-exports.parseStyleString = function (style) { return parser_1.parseExpression(JSON.stringify(exports.createStyleObject(style))); };
-/**
- * Create AST tree of style object from style concat
- */
-exports.parseStyleConcat = function (concatStatement) {
-    var styleObjectExpressionString = '{';
-    var fullStatement = concatStatement.parts.reduce(function (statement, currentPart) {
-        var currentStatement = '';
-        if (currentPart.type === 'TextNode') {
-            currentStatement = currentPart.chars;
-        }
-        if (currentPart.type === 'MustacheStatement' && currentPart.path.type === 'PathExpression') {
-            currentStatement = "{{" + currentPart.path.parts.join('.') + "}}";
-        }
-        return "" + statement + currentStatement;
-    }, '');
-    fullStatement.split(';').forEach(function (cssRule) {
-        var _a = cssRule.split(':').map(function (str) { return str.trim(); }), prop = _a[0], value = _a[1];
-        var processedValue = syntax_1.preprocess(value);
-        var finalValue = "\"" + value + "\"";
-        if (processedValue.body.find(function (b) { return b.type === 'MustacheStatement'; })) {
-            finalValue = processedValue.body.reduce(function (statement, current) {
-                var currentStatement = '';
-                if (current.type === 'TextNode') {
-                    currentStatement = current.chars;
-                }
-                if (current.type === 'MustacheStatement' && current.path.type === 'PathExpression') {
-                    currentStatement = '${' + current.path.parts.join('.') + '}';
-                }
-                return "" + statement + currentStatement;
-            }, '');
-            finalValue = "`" + finalValue + "`";
-        }
-        styleObjectExpressionString += "\"" + exports.camelizePropName(prop) + "\": ";
-        styleObjectExpressionString += finalValue + ",";
+exports.createStyleObject = function (hbsStatement) {
+    var rawHbsStatement = hbsStatement.type === 'TextNode' ? hbsStatement.chars : syntax_1.print(hbsStatement).slice(1, -1);
+    var objectProps = rawHbsStatement
+        .split(';')
+        .filter(function (item) { return item.length !== 0; })
+        .map(function (cssRule) {
+        var _a = cssRule.split(':').map(function (str) { return str.trim(); }), rawKey = _a[0], rawValue = _a[1];
+        var _b = [rawKey, rawValue].map(function (item) {
+            return syntax_1.preprocess(item || '').body.filter(function (item) { return item.type === 'MustacheStatement' || item.type === 'TextNode'; });
+        }), hbsKey = _b[0], hbsValue = _b[1];
+        var key = hbsKey.length === 1
+            ? hbsKey[0].type === 'TextNode'
+                ? Babel.stringLiteral(exports.camelizePropName(hbsKey[0].chars)) // Capitalize key name
+                : expressions_1.resolveStatement(hbsKey[0])
+            : expressions_1.createConcat(hbsKey);
+        var value = hbsValue.length === 1 ? expressions_1.resolveStatement(hbsValue[0]) : expressions_1.createConcat(hbsValue);
+        var isComputed = hbsKey.length > 1;
+        return Babel.objectProperty(key, value, isComputed);
     });
-    styleObjectExpressionString += '}';
-    return parser_1.parseExpression(styleObjectExpressionString);
+    return Babel.objectExpression(objectProps);
 };

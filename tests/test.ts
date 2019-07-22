@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
 import { compile } from '../'
-// import { compile } from '../src'
 import generate    from '@babel/generator'
 import { parse }   from '@babel/parser'
 
@@ -112,8 +111,35 @@ describe('element attributes', () => {
     expect(compile('<div style="background-image: url(\'image.png\'); margin-left: 10px" />', false)).toBe(
       recompile('<div style={{ "backgroundImage": "url(\'image.png\')", "marginLeft": "10px" }} />')
     )
-    expect(compile('<div style="background-image: url(\'{{some.imageSrc}}\'); margin-left: 10px; width: {{some.percentage}}px; margin-top: 10px; text-align: {{textAlign}}" />', false)).toBe(
-      recompile('<div style={{ "backgroundImage": `url(\'${some.imageSrc}\')`, "marginLeft": "10px", "width": `${some.percentage}px`, "marginTop": "10px", "textAlign": `${textAlign}` }} />')
+  })
+
+  test('should convert the "styles" string with variables to stylesObject', () => {
+    // Block of styles
+    expect(
+      compile(
+        '<div style="background-image: url(\'{{some.imageSrc}}\'); margin-left: 10px; width: {{some.width}}px; margin-top: 10px; text-align: {{textAlign}}" />',
+        false
+      )
+    ).toBe(
+      recompile(
+        `<div style={{ 
+          "backgroundImage": "url('" + some.imageSrc + "')", 
+          "marginLeft": "10px", 
+          "width": some.width + "px", 
+          "marginTop": "10px", 
+          "textAlign": textAlign
+        }} />`
+      )
+    )
+
+    // Trailing semicolon
+    expect(compile('<div style="background-image: url(\'{{some.imageSrc}}\');" />', false)).toBe(
+      recompile(`<div style={{ "backgroundImage": "url('" + some.imageSrc + "')" }} />`)
+    )
+
+    // Expression in key
+    expect(compile('<div style="background-{{image}}: url(\'{{some.imageSrc}}\');" />', false)).toBe(
+      recompile(`<div style={{ ["background-" + image]: "url('" + some.imageSrc + "')" }} />`)
     )
   })
 })

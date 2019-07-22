@@ -1,6 +1,7 @@
-import { parseExpression } from '@babel/parser'
-import { ConcatStatement } from '@glimmer/syntax/dist/types/lib/types/nodes';
-import { preprocess } from '@glimmer/syntax';
+import { AST as Glimmer, preprocess, print } from '@glimmer/syntax'
+import * as Babel                            from '@babel/types'
+import { parseExpression }                   from '@babel/parser'
+import { createConcat, resolveStatement }    from './expressions'
 
 /**
  * Transforms "prop-name" to "propName"
@@ -9,70 +10,37 @@ import { preprocess } from '@glimmer/syntax';
 export const camelizePropName = (propName: string) => propName.replace(/-([a-z])/g, (_, $1) => $1.toUpperCase())
 
 /**
- * Converts style string to style object
+ * Create AST tree of style object
  */
-export const createStyleObject = (style: string): Record<string, string | number> => {
-  const styleObject: Record<string, string | number> = {}
+export const createStyleObject = (hbsStatement: Glimmer.TextNode | Glimmer.ConcatStatement): Babel.ObjectExpression => {
+  const rawHbsStatement: string
+    = hbsStatement.type === 'TextNode' ? hbsStatement.chars : print(hbsStatement).slice(1, -1)
 
-  const stylePropsList = style.split(';')
+  const objectProps: Array<Babel.ObjectMethod | Babel.ObjectProperty | Babel.SpreadElement> = rawHbsStatement
+    .split(';')
+    .filter(item => item.length !== 0)
+    .map(cssRule => {
+      const [rawKey, rawValue]: (string | undefined)[] = cssRule.split(':').map(str => str.trim())
 
-  for (let i = 0; i < stylePropsList.length; i++) {
-    const entry = stylePropsList[i].trim().split(/:(.+)/)
+      const [hbsKey, hbsValue] = [rawKey, rawValue].map(
+        item =>
+          preprocess(item || '').body.filter(
+            item => item.type === 'MustacheStatement' || item.type === 'TextNode'
+          ) as Array<Glimmer.TextNode | Glimmer.MustacheStatement>
+      )
 
-    if (entry.length < 2) {
-      continue
-    }
+      const key
+        = hbsKey.length === 1
+          ? hbsKey[0].type === 'TextNode'
+            ? Babel.stringLiteral(camelizePropName((hbsKey[0] as Glimmer.TextNode).chars)) // Capitalize key name
+            : resolveStatement(hbsKey[0])
+          : createConcat(hbsKey)
 
-    const propName = camelizePropName(entry[0].trim())
+      const value = hbsValue.length === 1 ? resolveStatement(hbsValue[0]) : createConcat(hbsValue)
+      const isComputed = hbsKey.length > 1
 
-    styleObject[propName] = entry[1].trim()
-  }
+      return Babel.objectProperty(key, value, isComputed)
+    })
 
-  return styleObject
-}
-
-/**
- * Creates AST tree of style object from style string
- * @param style Styles string
- */
-export const parseStyleString = (style: string) => parseExpression(JSON.stringify(createStyleObject(style)))
-
-/**
- * Create AST tree of style object from style concat
- */
-export const parseStyleConcat = (concatStatement: ConcatStatement) => {
-  let styleObjectExpressionString = '{';
-  const fullStatement = concatStatement.parts.reduce((statement, currentPart) => {
-    let currentStatement = '';
-    if (currentPart.type === 'TextNode') {
-      currentStatement = currentPart.chars;
-    }
-    if (currentPart.type === 'MustacheStatement' && currentPart.path.type === 'PathExpression') {
-      currentStatement = `{{${currentPart.path.parts.join('.')}}}`;
-    }
-    return `${statement}${currentStatement}`;
-  }, '');
-
-  fullStatement.split(';').forEach(cssRule => {
-    const [prop, value] = cssRule.split(':').map(str => str.trim());
-    const processedValue = preprocess(value);
-    let finalValue = `"${value}"`;
-    if (processedValue.body.find(b => b.type === 'MustacheStatement')) {
-      finalValue = processedValue.body.reduce((statement, current) => {
-        let currentStatement = '';
-        if (current.type === 'TextNode') {
-          currentStatement = current.chars;
-        }
-        if (current.type === 'MustacheStatement' && current.path.type === 'PathExpression') {
-          currentStatement = '${' + current.path.parts.join('.') + '}';
-        }
-        return `${statement}${currentStatement}`;
-      }, '');
-      finalValue = `\`${finalValue}\``;
-    }
-    styleObjectExpressionString += `"${camelizePropName(prop)}": `
-    styleObjectExpressionString += `${finalValue},`
-  });
-  styleObjectExpressionString += '}';
-  return parseExpression(styleObjectExpressionString);
+  return Babel.objectExpression(objectProps)
 }
