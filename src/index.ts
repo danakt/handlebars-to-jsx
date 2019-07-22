@@ -7,7 +7,7 @@ import { createProgram } from './program'
 /**
  * Converts Handlebars code to JSX code
  * @param hbsCode Handlebars code to convert
- * @param options Compilation options
+ * @param [options] Compilation options
  * @param [options.isComponent] Should return JSX code wrapped as a function component
  * @param [options.isModule] Should return generated code exported as default
  * @param [options.includeImport] Should include react import
@@ -23,7 +23,7 @@ export function compile(
 ): string
 export function compile(
   hbsCode: string,
-  options: boolean | { isComponent?: boolean; isModule?: boolean, includeImport?: boolean } = true
+  options: boolean | { isComponent?: boolean; isModule?: boolean; includeImport?: boolean } = true
 ): string {
   if (typeof options === 'boolean') {
     return compile(hbsCode, { isComponent: options })

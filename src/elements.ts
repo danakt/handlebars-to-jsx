@@ -3,7 +3,7 @@ import * as Babel                                          from '@babel/types'
 import * as isSelfClosing                                  from 'is-self-closing'
 import * as convertHTMLAttribute                           from 'react-attr-converter'
 import { createConcat, resolveExpression, createChildren } from './expressions'
-import { parseStyleString, parseStyleConcat }                                from './styles'
+import { createStyleObject }                               from './styles'
 
 /**
  * Creates JSX fragment
@@ -40,7 +40,7 @@ export const createAttribute = (attrNode: Glimmer.AttrNode): Babel.JSXAttribute 
   switch (value.type) {
     case 'TextNode': {
       if (reactAttrName === 'style') {
-        const styleObjectExpression = parseStyleString(value.chars)
+        const styleObjectExpression = createStyleObject(value)
         return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(styleObjectExpression))
       }
 
@@ -54,7 +54,7 @@ export const createAttribute = (attrNode: Glimmer.AttrNode): Babel.JSXAttribute 
     case 'ConcatStatement': {
       const expression = createConcat(value.parts)
       if (reactAttrName === 'style') {
-        const styleObjectExpression = parseStyleConcat(value);
+        const styleObjectExpression = createStyleObject(value)
         return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(styleObjectExpression))
       }
 

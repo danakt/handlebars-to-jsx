@@ -29,7 +29,7 @@ exports.createAttribute = function (attrNode) {
     switch (value.type) {
         case 'TextNode': {
             if (reactAttrName === 'style') {
-                var styleObjectExpression = styles_1.parseStyleString(value.chars);
+                var styleObjectExpression = styles_1.createStyleObject(value);
                 return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(styleObjectExpression));
             }
             return Babel.jsxAttribute(name, Babel.stringLiteral(value.chars));
@@ -40,7 +40,7 @@ exports.createAttribute = function (attrNode) {
         case 'ConcatStatement': {
             var expression = expressions_1.createConcat(value.parts);
             if (reactAttrName === 'style') {
-                var styleObjectExpression = styles_1.parseStyleConcat(value);
+                var styleObjectExpression = styles_1.createStyleObject(value);
                 return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(styleObjectExpression));
             }
             return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(expression));
