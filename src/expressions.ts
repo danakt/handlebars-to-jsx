@@ -45,14 +45,18 @@ export const resolveStatement = (statement: Glimmer.Statement) => {
  */
 export const resolveElementChild = (
   statement: Glimmer.Statement
-): Babel.JSXText | Babel.JSXElement | Babel.JSXExpressionContainer => {
+):
+  | Babel.JSXText
+  | Babel.JSXElement
+  | Babel.JSXExpressionContainer
+  | Array<Babel.JSXText | Babel.JSXExpressionContainer> => {
   switch (statement.type) {
     case 'ElementNode': {
       return convertElement(statement)
     }
 
     case 'TextNode': {
-      return Babel.jsxText(statement.chars)
+      return prepareJsxText(statement.chars)
     }
 
     case 'MustacheCommentStatement':
@@ -141,7 +145,14 @@ export const prependToPath = (path: Babel.MemberExpression | Babel.Identifier, p
  * @param body List of Glimmer statements
  */
 export const createChildren = (body: Glimmer.Statement[]): Babel.JSXElement['children'] =>
-  body.map(statement => resolveElementChild(statement))
+  body.reduce(
+    (acc, statement) => {
+      const child = resolveElementChild(statement)
+
+      return Array.isArray(child) ? [...acc, ...child] : [...acc, child]
+    },
+    [] as Babel.JSXElement['children']
+  )
 
 /**
  * Converts root children
@@ -163,4 +174,21 @@ export const createConcat = (parts: Glimmer.ConcatStatement['parts']): Babel.Bin
     },
     null as null | Babel.Expression | Babel.BinaryExpression
   ) as Babel.BinaryExpression | Babel.Expression
+}
+
+/**
+ * Escapes syntax chars in jsx text
+ * @param text
+ */
+export const prepareJsxText = (text: string): Babel.JSXText | Array<Babel.JSXText | Babel.JSXExpressionContainer> => {
+  // Escape jsx syntax chars
+  const parts = text.split(/(:?{|})/)
+
+  if (parts.length === 1) {
+    return Babel.jsxText(text)
+  }
+
+  return parts.map(item =>
+    item === '{' || item === '}' ? Babel.jsxExpressionContainer(Babel.stringLiteral(item)) : Babel.jsxText(item)
+  )
 }
