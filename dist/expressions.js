@@ -43,7 +43,7 @@ exports.resolveElementChild = function (statement) {
             return elements_1.convertElement(statement);
         }
         case 'TextNode': {
-            return Babel.jsxText(statement.chars);
+            return exports.prepareJsxText(statement.chars);
         }
         case 'MustacheCommentStatement':
         case 'CommentStatement': {
@@ -115,7 +115,10 @@ exports.prependToPath = function (path, prepend) {
  * @param body List of Glimmer statements
  */
 exports.createChildren = function (body) {
-    return body.map(function (statement) { return exports.resolveElementChild(statement); });
+    return body.reduce(function (acc, statement) {
+        var child = exports.resolveElementChild(statement);
+        return Array.isArray(child) ? acc.concat(child) : acc.concat([child]);
+    }, []);
 };
 /**
  * Converts root children
@@ -133,4 +136,18 @@ exports.createConcat = function (parts) {
         }
         return Babel.binaryExpression('+', acc, exports.resolveStatement(item));
     }, null);
+};
+/**
+ * Escapes syntax chars in jsx text
+ * @param text
+ */
+exports.prepareJsxText = function (text) {
+    // Escape jsx syntax chars
+    var parts = text.split(/(:?{|})/);
+    if (parts.length === 1) {
+        return Babel.jsxText(text);
+    }
+    return parts.map(function (item) {
+        return item === '{' || item === '}' ? Babel.jsxExpressionContainer(Babel.stringLiteral(item)) : Babel.jsxText(item);
+    });
 };

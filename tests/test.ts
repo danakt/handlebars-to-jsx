@@ -40,6 +40,12 @@ describe('element values', () => {
       recompile('props => <div>Lorem {props.ipsum} dolor sit amet</div>')
     )
   })
+
+  test('should escape curly braces in handlebars template', () => {
+    expect(compile('<div>Lorem {ipsum} dolor sit {amet</div>')).toBe(
+      recompile(`props => <div>Lorem {"{"}ipsum{"}"} dolor sit {"{"}amet</div>`)
+    )
+  })
 })
 
 describe('component support', () => {
