@@ -4,5 +4,5 @@ node_js:
 branches:
   only:
     - master
-before_install:
+before_script:
   - yarn build
