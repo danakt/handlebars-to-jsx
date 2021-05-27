@@ -9,7 +9,8 @@
     "watch": "tsc --watch",
     "test": "jest",
     "build": "tsc",
-    "prepublishOnly": "tsc"
+    "prepublishOnly": "tsc",
+    "pretest": "tsc"
   },
   "keywords": [
     "handlebars",
