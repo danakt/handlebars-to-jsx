@@ -57,7 +57,7 @@
     "@babel/generator": "^7.5.5",
     "@babel/parser": "^7.5.5",
     "@babel/types": "^7.5.5",
-    "glimmer-engine": "file:./_dependencies/forked-glimmer-vm",
+    "glimmer-engine": "file:../forked-glimmer-vm",
     "is-self-closing": "^1.0.1",
     "react-attr-converter": "^0.3.1",
     "reserved-words": "^0.1.2"

@@ -2071,7 +2071,7 @@ get-value@^2.0.3, get-value@^2.0.6:
   resolved "https://registry.npmjs.org/get-value/-/get-value-2.0.6.tgz#dc15ca1c672387ca76bd37ac0a395ba2042a2c28"
   integrity sha1-3BXKHGcjh8p2vTesCjlbogQqLCg=
 
-"glimmer-engine@file:./_dependencies/forked-glimmer-vm":
+"glimmer-engine@file:../forked-glimmer-vm":
   version "0.83.1-ex"
   dependencies:
     "@handlebars/parser" "~2.0.0"
