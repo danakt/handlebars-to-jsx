@@ -8,5 +8,5 @@
     "rootDir": "./src",
     "sourceMap": true
   },
-  "exclude": ["./tests"]
+  "exclude": ["./tests", "./_dependencies"]
 }
