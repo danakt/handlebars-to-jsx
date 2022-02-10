@@ -1,5 +1,5 @@
 import { AST as Glimmer, traverse } from '@glimmer/syntax'
-import { DEFAULT_NAMESPACE_NAME }   from './constants'
+import { DEFAULT_EACH_LOOP_NAMESPACE, DEFAULT_GLOBAL_NAMESPACE }   from './constants'
 
 /**
  * Checks is each statement
@@ -23,7 +23,7 @@ const createNamespaceStack = () => {
     push: (item: { node: Glimmer.Node; name?: string }) =>
       namespaces.push({
         node: item.node,
-        name: item.name || DEFAULT_NAMESPACE_NAME
+        name: item.name || DEFAULT_EACH_LOOP_NAMESPACE
       }),
 
     /** Goes to namespace up */
@@ -42,7 +42,7 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template, isCompone
 
   // Global component namespace
   if (isComponent) {
-    namespaces.push({ node: programTemplate, name: 'props' })
+    namespaces.push({ node: programTemplate, name: DEFAULT_GLOBAL_NAMESPACE })
   }
 
   let eachStatementEntered = false
@@ -50,8 +50,10 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template, isCompone
   traverse(programTemplate, {
     // Process block statements
     All: {
+      // push the inner namespace for the next block after an each statement is entered
+      // TODO: verify nested each statements work
       enter(node: Glimmer.Node) {
-        if (node.type === 'Program' && eachStatementEntered) {
+        if (node.type === 'Block' && eachStatementEntered) {
           namespaces.push({ node })
           eachStatementEntered = false
         }
@@ -72,7 +74,9 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template, isCompone
     PathExpression(node: Glimmer.PathExpression) {
       // Add prefixes
       if (namespaces.length) {
-        node.parts.unshift(namespaces.head().name)
+        node.parts.unshift(namespaces.head().name) // is this the bug???
+        // node.tail.unshift(node.head.);
+        // node.head = namespaces.head().name;
       }
     }
   })

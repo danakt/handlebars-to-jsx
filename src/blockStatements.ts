@@ -2,7 +2,7 @@ import { AST as Glimmer }                                                  from 
 import * as Babel                                                          from '@babel/types'
 import { resolveExpression, createRootChildren, createPath, appendToPath } from './expressions'
 import { createFragment }                                                  from './elements'
-import { DEFAULT_NAMESPACE_NAME, DEFAULT_KEY_NAME }                        from './constants'
+import { DEFAULT_EACH_LOOP_NAMESPACE, DEFAULT_KEY_NAME }                        from './constants'
 
 /**
  * Resolves block type
@@ -18,9 +18,6 @@ export const resolveBlockStatement = (blockStatement: Glimmer.BlockStatement) =>
     }
 
     case 'each': {
-      // console.log('*************************************');
-      // console.log(blockStatement);
-      // console.log('*************************************');
       return createEachStatement(blockStatement)
     }
 
@@ -77,30 +74,13 @@ export const createEachStatement = (blockStatement: Glimmer.BlockStatement) => {
     ? createFragment([Babel.jsxExpressionContainer(mapCallbackChildren)])
     : mapCallbackChildren
 
-  // Update parent reference of variable attributes (i.e. #each in list => (item) <div name={item.name}...)
-  wrappedCallbackChildren.openingElement.attributes.forEach((attr) => {
-    const jsxAttr = attr as Babel.JSXAttribute;
-    if (!jsxAttr)
-      return;
-
-    const jsxAttrExprContainer = jsxAttr.value as Babel.JSXExpressionContainer;
-    if (!jsxAttrExprContainer)
-      return;
-
-    const jsxAttrExpr = jsxAttrExprContainer.expression as Babel.MemberExpression;
-    if (!jsxAttrExpr)
-      return;
-    
-    jsxAttrExpr.object = Babel.identifier(DEFAULT_NAMESPACE_NAME);
-  });
-
   // Adding the "key" attribute to child element
   wrappedCallbackChildren.openingElement.attributes.push(
     Babel.jsxAttribute(Babel.jsxIdentifier('key'), Babel.jsxExpressionContainer(Babel.identifier(DEFAULT_KEY_NAME)))
   )
 
   const mapCallback = Babel.arrowFunctionExpression(
-    [Babel.identifier(DEFAULT_NAMESPACE_NAME), Babel.identifier(DEFAULT_KEY_NAME)],
+    [Babel.identifier(DEFAULT_EACH_LOOP_NAMESPACE), Babel.identifier(DEFAULT_KEY_NAME)],
     wrappedCallbackChildren
   )
 

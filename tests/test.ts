@@ -223,11 +223,22 @@ describe('block statements', () => {
     test('siblings each block statements with path expression - no component', () => {
       expect(
         compile(
-          '<div>{{#each list}}<div>{{name}}</div>{{/each}}{{#each list}}<div>{{name}}</div>{{/each}}</div>',
+          '<div>{{#each list}}<div att={{type}}>{{name}}</div>{{/each}}{{#each list}}<div>{{name}}</div>{{/each}}</div>',
           false
         )
       ).toBe(
-        '<div>{list.map((item, i) => <div key={i}>{item.name}</div>)}{list.map((item, i) => <div key={i}>{item.name}</div>)}</div>;'
+        '<div>{list.map((item, i) => <div att={item.type} key={i}>{item.name}</div>)}{list.map((item, i) => <div key={i}>{item.name}</div>)}</div>;'
+      )
+    })
+
+    test('siblings each block statements with path expression', () => {
+      expect(
+        compile(
+          '<div>{{#each list}}<div att={{type}}>{{name}}</div>{{/each}}{{#each list}}<div>{{name}}</div>{{/each}}</div>',
+          true
+        )
+      ).toBe(
+        'props => <div>{props.list.map((item, i) => <div att={item.type} key={i}>{item.name}</div>)}{props.list.map((item, i) => <div key={i}>{item.name}</div>)}</div>;'
       )
     })
 
