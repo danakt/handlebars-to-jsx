@@ -269,3 +269,11 @@ describe('include react import', () => {
     )
   })
 })
+
+describe('complex templates', () => {
+  test('with handlebars partial statement', () => {
+    expect(compile('<div><div>{{title}}</div>{{#if inEstate.any}}{{>SomePartial inEstate.assets}}{{/if}}</div>', true)).toBe(
+      'props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial assets={props.inEstate.assets} />}</div>;'
+    )
+  })
+})

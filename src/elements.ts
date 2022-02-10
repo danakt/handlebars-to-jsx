@@ -83,3 +83,37 @@ export const convertElement = (node: Glimmer.ElementNode): Babel.JSXElement => {
     isElementSelfClosing
   )
 }
+
+// TODO: to get the correct prop name, we must have already converted the partial into JSX.
+// TODO: generate lookup of pre-converted partials, allowing us to verify & set prop names correctly.
+const createPropAttributeFromPartialParamExpression = (paramExpression: Glimmer.Expression): Babel.JSXAttribute | null => {
+  const paramAsPathExpression = paramExpression as Glimmer.PathExpression;
+  const propName = paramAsPathExpression.parts[paramAsPathExpression.parts.length - 1];
+  const attributeName = convertHTMLAttribute(propName)
+
+  if (!/^[_\-A-z0-9]+$/.test(attributeName)) {
+    return null
+  }
+
+  const name = Babel.jsxIdentifier(attributeName)
+  const valueExpression = Babel.jsxExpressionContainer(resolveExpression(paramAsPathExpression));
+
+  return Babel.jsxAttribute(name, valueExpression)
+};
+
+/**
+ * Converts a partial statement from Handlebars to a JSXElement
+ */
+ export const convertPartialStatement = (partialStatement: Glimmer.PartialStatement): Babel.JSXElement => {
+  const jsxElementName = (partialStatement.name as Glimmer.PathExpression).original;
+  const tagName = Babel.jsxIdentifier(jsxElementName)
+  const attributes = partialStatement.params.map(createPropAttributeFromPartialParamExpression).filter(Boolean) as Babel.JSXAttribute[]
+  const isElementSelfClosing = true;
+
+  return Babel.jsxElement(
+    Babel.jsxOpeningElement(tagName, attributes, isElementSelfClosing),
+    Babel.jsxClosingElement(tagName),
+    [],
+    isElementSelfClosing
+  )
+}

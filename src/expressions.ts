@@ -1,6 +1,6 @@
 import { AST as Glimmer }                 from 'glimmer-engine/dist/@glimmer/syntax'
 import * as Babel                         from '@babel/types'
-import { createFragment, convertElement } from './elements'
+import { createFragment, convertElement, convertPartialStatement } from './elements'
 import { resolveBlockStatement }          from './blockStatements'
 import { createComment }                  from './comments'
 
@@ -32,10 +32,27 @@ export const resolveStatement = (statement: Glimmer.Statement) => {
       throw new Error('Top level comments currently is not supported')
     }
 
+    case 'PartialStatement': {
+      return convertPartialStatement(statement)
+    }
+
+    case 'PartialBlockStatement': {
+      throw new Error(`PartialBlockStatement`)
+     // return resolvePartialBlockStatement(statement)
+    }
+
     default: {
-      throw new Error(`Unexpected expression "${statement.type}"`)
+      throw new Error(`Unexpected expression - should not be possible...`)
     }
   }
+}
+
+/**
+ * Resolves partial block type
+ */
+ export const resolvePartialBlockStatement = (resolvePartialBlockStatement: Glimmer.PartialBlockStatement) => {
+  const aaa = (resolvePartialBlockStatement.name as Glimmer.PathExpression).original;
+  console.log(aaa);
 }
 
 /**
