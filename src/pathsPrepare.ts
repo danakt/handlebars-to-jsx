@@ -1,4 +1,4 @@
-import { AST as Glimmer, traverse } from '@glimmer/syntax'
+import { AST as Glimmer, traverse } from 'glimmer-engine/dist/@glimmer/syntax'
 import { DEFAULT_EACH_LOOP_NAMESPACE, DEFAULT_GLOBAL_NAMESPACE }   from './constants'
 
 /**

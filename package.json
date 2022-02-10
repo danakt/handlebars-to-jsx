@@ -1,6 +1,6 @@
 {
   "name": "handlebars-to-jsx",
-  "version": "0.1.5-cr",
+  "version": "0.1.5-cr-2",
   "author": "Danakt Frost <danakt@protonmail.com>",
   "license": "MIT",
   "description": "Converts Handlebars template to React component",
@@ -34,7 +34,7 @@
     "@types/node": "^12.6.8",
     "@types/object-hash": "^1.3.0",
     "@types/prettier": "^1.18.0",
-    "eslint": "8.6.0",
+    "eslint": "7.32.0",
     "eslint-config-prettier": "^6.0.0",
     "eslint-config-standard": "^13.0.1",
     "eslint-plugin-arca": "^0.8.1",
@@ -57,8 +57,7 @@
     "@babel/generator": "^7.5.5",
     "@babel/parser": "^7.5.5",
     "@babel/types": "^7.5.5",
-    "@glimmer/reference": "^0.83.1",
-    "@glimmer/syntax": "^0.83.1",
+    "glimmer-engine": "file:../forked-glimmer-vm",
     "is-self-closing": "^1.0.1",
     "react-attr-converter": "^0.3.1",
     "reserved-words": "^0.1.2"

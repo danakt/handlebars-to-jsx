@@ -1,5 +1,5 @@
 /* eslint-disable import/export */
-import { preprocess }    from '@glimmer/syntax'
+import { preprocess }    from 'glimmer-engine/dist/@glimmer/syntax'
 import generate          from '@babel/generator'
 import * as Babel        from '@babel/types'
 import { createProgram } from './program'

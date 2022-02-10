@@ -1,5 +1,5 @@
-import { AST as Glimmer, preprocess, print } from '@glimmer/syntax'
-import { PresentArray } from '@glimmer/interfaces';
+import { AST as Glimmer, preprocess, print } from 'glimmer-engine/dist/@glimmer/syntax'
+import { PresentArray } from 'glimmer-engine/dist/@glimmer/interfaces';
 import * as Babel                            from '@babel/types'
 import { createConcat, resolveStatement }    from './expressions'
 

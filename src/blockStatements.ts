@@ -1,4 +1,4 @@
-import { AST as Glimmer }                                                  from '@glimmer/syntax'
+import { AST as Glimmer }                                                  from 'glimmer-engine/dist/@glimmer/syntax'
 import * as Babel                                                          from '@babel/types'
 import { resolveExpression, createRootChildren, createPath, appendToPath } from './expressions'
 import { createFragment }                                                  from './elements'
