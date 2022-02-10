@@ -5,7 +5,7 @@ import { DEFAULT_NAMESPACE_NAME }   from './constants'
  * Checks is each statement
  */
 const isEachStatement = (node: Glimmer.Node): node is Glimmer.BlockStatement =>
-  node.type === 'BlockStatement' && node.path.original === 'each'
+  node.type === 'BlockStatement' && node.path.loc.asString() === 'each'
 
 /**
  * Creates stack of namespaces
@@ -37,17 +37,17 @@ const createNamespaceStack = () => {
 /**
  * Prepares paths Glimmer AST for compatible with JS AST.
  */
-export const prepareProgramPaths = (program: Glimmer.Program, isComponent: boolean) => {
+export const prepareProgramPaths = (programTemplate: Glimmer.Template, isComponent: boolean) => {
   const namespaces = createNamespaceStack()
 
   // Global component namespace
   if (isComponent) {
-    namespaces.push({ node: program, name: 'props' })
+    namespaces.push({ node: programTemplate, name: 'props' })
   }
 
   let eachStatementEntered = false
 
-  traverse(program, {
+  traverse(programTemplate, {
     // Process block statements
     All: {
       enter(node: Glimmer.Node) {

@@ -12,7 +12,7 @@ import { createComponent }     from './componentCreator'
  * @param includeImport Should include react import
  */
 export const createProgram = (
-  hbsProgram: Glimmer.Program,
+  hbsProgram: Glimmer.Template,
   isComponent: boolean,
   isModule: boolean,
   includeImport: boolean

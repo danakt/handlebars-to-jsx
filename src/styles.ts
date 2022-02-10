@@ -1,6 +1,6 @@
 import { AST as Glimmer, preprocess, print } from '@glimmer/syntax'
+import { PresentArray } from '@glimmer/interfaces';
 import * as Babel                            from '@babel/types'
-import { parseExpression }                   from '@babel/parser'
 import { createConcat, resolveStatement }    from './expressions'
 
 /**
@@ -26,7 +26,7 @@ export const createStyleObject = (hbsStatement: Glimmer.TextNode | Glimmer.Conca
         item =>
           preprocess(item || '').body.filter(
             item => item.type === 'MustacheStatement' || item.type === 'TextNode'
-          ) as Array<Glimmer.TextNode | Glimmer.MustacheStatement>
+          ) as PresentArray<Glimmer.TextNode | Glimmer.MustacheStatement>
       )
 
       const key
