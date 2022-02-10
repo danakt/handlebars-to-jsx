@@ -20,12 +20,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/danakt/handlebars-to-jsx.git"
+    "url": "https://github.com/CAndRyan/handlebars-to-jsx.git"
   },
   "bugs": {
-    "url": "https://github.com/danakt/handlebars-to-jsx/issues"
+    "url": "https://github.com/CAndRyan/handlebars-to-jsx.git/issues"
   },
-  "homepage": "https://github.com/danakt/handlebars-to-jsx",
+  "homepage": "https://github.com/CAndRyan/handlebars-to-jsx.git",
   "typings": "index.d.ts",
   "devDependencies": {
     "@types/babel__generator": "^7.0.2",
