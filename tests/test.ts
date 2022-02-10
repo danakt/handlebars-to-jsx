@@ -215,8 +215,8 @@ describe('block statements', () => {
     })
 
     test('nested each block statements', () => {
-      expect(compile('<div>{{#each list}}{{#each list.nested}}<div />{{/each}}{{/each}}</div>')).toBe(
-        'props => <div>{props.list.map((item, i) => <React.Fragment key={i}>{item.list.nested.map((item, i) => <div key={i} />)}</React.Fragment>)}</div>;'
+      expect(compile('<div>{{#each list}}{{#each nestedOuter.inner}}<div id={{deeplyNested}} />{{/each}}{{/each}}</div>')).toBe(
+        'props => <div>{props.list.map((item, i) => <React.Fragment key={i}>{item.nestedOuter.inner.map((item, i) => <div id={item.deeplyNested} key={i} />)}</React.Fragment>)}</div>;'
       )
     })
 
