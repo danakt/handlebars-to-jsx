@@ -8,7 +8,7 @@ import { DEFAULT_NAMESPACE_NAME, DEFAULT_KEY_NAME }                        from 
  * Resolves block type
  */
 export const resolveBlockStatement = (blockStatement: Glimmer.BlockStatement) => {
-  switch (blockStatement.path.loc.asString()) { // TODO: check if this is equivalent to 'original' from v0.38.4
+  switch ((blockStatement.path as Glimmer.PathExpression).original) {
     case 'if': {
       return createConditionStatement(blockStatement, false)
     }
@@ -18,11 +18,14 @@ export const resolveBlockStatement = (blockStatement: Glimmer.BlockStatement) =>
     }
 
     case 'each': {
+      // console.log('*************************************');
+      // console.log(blockStatement);
+      // console.log('*************************************');
       return createEachStatement(blockStatement)
     }
 
     default: {
-      throw new Error(`Unexpected ${blockStatement.path.loc} statement`)
+      throw new Error(`Unexpected ${(blockStatement.path as Glimmer.PathExpression).original} statement`)
     }
   }
 }

@@ -5,7 +5,7 @@ import { DEFAULT_NAMESPACE_NAME }   from './constants'
  * Checks is each statement
  */
 const isEachStatement = (node: Glimmer.Node): node is Glimmer.BlockStatement =>
-  node.type === 'BlockStatement' && node.path.loc.asString() === 'each'
+  node.type === 'BlockStatement' && (node.path as Glimmer.PathExpression).original === 'each'
 
 /**
  * Creates stack of namespaces
