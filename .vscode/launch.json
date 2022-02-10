@@ -7,7 +7,7 @@
       "request": "launch",
       "env": { "CI": "true" },
       "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "args": ["--runInBand", "--no-cache", "-t=each block statement$"],
+      "args": ["--runInBand", "--no-cache", "-t=siblings each block statements with path expression - no component$"],
       "cwd": "${workspaceRoot}",
       "outFiles":[
           "${workspaceFolder}/dist/**/*.js",

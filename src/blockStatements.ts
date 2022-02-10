@@ -77,6 +77,23 @@ export const createEachStatement = (blockStatement: Glimmer.BlockStatement) => {
     ? createFragment([Babel.jsxExpressionContainer(mapCallbackChildren)])
     : mapCallbackChildren
 
+  // Update parent reference of variable attributes (i.e. #each in list => (item) <div name={item.name}...)
+  wrappedCallbackChildren.openingElement.attributes.forEach((attr) => {
+    const jsxAttr = attr as Babel.JSXAttribute;
+    if (!jsxAttr)
+      return;
+
+    const jsxAttrExprContainer = jsxAttr.value as Babel.JSXExpressionContainer;
+    if (!jsxAttrExprContainer)
+      return;
+
+    const jsxAttrExpr = jsxAttrExprContainer.expression as Babel.MemberExpression;
+    if (!jsxAttrExpr)
+      return;
+    
+    jsxAttrExpr.object = Babel.identifier(DEFAULT_NAMESPACE_NAME);
+  });
+
   // Adding the "key" attribute to child element
   wrappedCallbackChildren.openingElement.attributes.push(
     Babel.jsxAttribute(Babel.jsxIdentifier('key'), Babel.jsxExpressionContainer(Babel.identifier(DEFAULT_KEY_NAME)))
