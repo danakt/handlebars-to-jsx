@@ -6,6 +6,7 @@
   "description": "Converts Handlebars template to React component",
   "main": "dist/index.js",
   "scripts": {
+    "update": "yarn upgrade glimmer-engine",
     "watch": "tsc --watch",
     "test": "jest",
     "build": "tsc",
