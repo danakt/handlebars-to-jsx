@@ -270,13 +270,19 @@ describe('include react import', () => {
   })
 })
 
-// describe('quirky behavior', () => {
-//   test('block within class attribute', () => { // TODO: update the glimmer parser to accomodate block statements within an attribute
-//     const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', true);
-//     const expectedResult = 'props => <div class={!Boolean(props.CanEdit) && "is-disabled"} />;';
-//     expect(jsx).toEqual(expectedResult);
-//   });
-// });
+describe('quirky behavior', () => {
+  // test('block within class attribute', () => { // TODO: update the glimmer parser to accomodate block statements within an attribute
+  //   const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', true);
+  //   const expectedResult = 'props => <div class={!Boolean(props.CanEdit) && "is-disabled"} />;';
+  //   expect(jsx).toEqual(expectedResult);
+  // });
+
+  test('unnamed context in partial template', () => {
+    const jsx = compile('{{#if .}}<div>{{#each .}}<span>{{Name}}</span>{{/each}}</div>{{/if}}', true);
+    const expectedResult = 'props => Boolean(props.context) && <div>{props.context.map((item, i) => <span key={i}>{item.Name}</span>)}</div>;';
+    expect(jsx).toEqual(expectedResult);
+  });
+});
 
 describe('with handlebars partial statement', () => {
   test('with isModule false', () => {

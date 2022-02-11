@@ -3,6 +3,7 @@ import * as Babel                         from '@babel/types'
 import { createFragment, convertElement, convertPartialStatement } from './elements'
 import { resolveBlockStatement }          from './blockStatements'
 import { createComment }                  from './comments'
+import { DEFAULT_UNIDENTIFIED_NAMESPACE } from './constants'
 
 /**
  * Converts the Handlebars expression to NON-JSX JS-compatible expression.
@@ -139,11 +140,12 @@ export const createPath = (pathExpression: Glimmer.PathExpression): Babel.Identi
     throw new Error('Unexpected empty expression parts')
   }
 
-  // Start identifier
-  let acc: Babel.Identifier | Babel.MemberExpression = Babel.identifier(parts[0])
+  // Start identifier - NOTE: we're expecting a pre-existing 'props' at th top-level
+  let acc: Babel.Identifier | Babel.MemberExpression = Babel.identifier(parts[0]);
 
   for (let i = 1; i < parts.length; i++) {
-    acc = appendToPath(acc, Babel.identifier(parts[i]))
+    const nextPart = parts[i] ?? DEFAULT_UNIDENTIFIED_NAMESPACE;
+    acc = appendToPath(acc, Babel.identifier(nextPart))
   }
 
   return acc
