@@ -270,16 +270,16 @@ describe('include react import', () => {
   })
 })
 
-describe('complex templates', () => {
-  test('with handlebars partial statement', () => {
-    expect(compile('<div><div>{{title}}</div>{{#if inEstate.any}}{{>SomePartial inEstate.assets}}{{/if}}</div>', true)).toBe(
+describe('with handlebars partial statement', () => {
+  test('with isModule false', () => {
+    const jsx = compile('<div><div>{{title}}</div>{{#if inEstate.any}}{{>SomePartial inEstate.assets}}{{/if}}</div>', { isComponent: true, isModule: false, includeImport: true });
+    expect(jsx).toEqual(
       'props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial assets={props.inEstate.assets} />}</div>;'
     )
   })
 
-  test('with handlebars partial statement, includeImport, isComponent, and isModule', () => {
+  test('with includeImport, isComponent, and isModule true', () => {
     const jsx = compile('<div><div>{{title}}</div>{{#if inEstate.any}}{{>SomePartial inEstate.assets}}{{/if}}</div>', { isComponent: true, isModule: true, includeImport: true });
-    console.log(jsx);
     expect(jsx).toEqual(
       'import React from "react";\nimport SomePartial from "./SomePartial";\nexport default (props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial assets={props.inEstate.assets} />}</div>);'
     )
