@@ -4,6 +4,19 @@ import { createRootChildren }  from './expressions'
 import { prepareProgramPaths } from './pathsPrepare'
 import { createComponent }     from './componentCreator'
 
+const getImportDirectives = (partialTemplates: string[]) => {
+  const reactImport = Babel.importDeclaration(
+    [Babel.importDefaultSpecifier(Babel.identifier('React'))],
+    Babel.stringLiteral('react')
+  );
+  const partialImports = partialTemplates.map((partialName) => Babel.importDeclaration(
+    [Babel.importDefaultSpecifier(Babel.identifier(partialName))],
+    Babel.stringLiteral(`./${partialName}`) // TODO: add support for specifying partial directory
+  ));
+
+  return [reactImport, ...partialImports];
+}
+
 /**
  * Creates program statement
  * @param hbsProgram The Handlebars program (root AST node)
@@ -17,18 +30,13 @@ export const createProgram = (
   isModule: boolean,
   includeImport: boolean
 ): Babel.Program => {
-  prepareProgramPaths(hbsProgram, isComponent)
+  const { getEncounteredPartialTemplates } = prepareProgramPaths(hbsProgram, isComponent)
 
-  const reactImport = Babel.importDeclaration(
-    [Babel.importDefaultSpecifier(Babel.identifier('React'))],
-    Babel.stringLiteral('react')
-  )
   const componentBody = createRootChildren(hbsProgram.body)
   const expression = isComponent ? createComponent(componentBody) : componentBody
   const statement = isModule ? Babel.exportDefaultDeclaration(expression) : Babel.expressionStatement(expression)
-
-  const directives: Babel.Statement[] = [statement]
-  includeImport && directives.unshift(reactImport)
-
+  const partialTemplates = getEncounteredPartialTemplates();
+  const directives: Babel.Statement[] = includeImport ? [...getImportDirectives(partialTemplates), statement] : [statement]
+  
   return Babel.program(directives)
 }

@@ -276,4 +276,12 @@ describe('complex templates', () => {
       'props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial assets={props.inEstate.assets} />}</div>;'
     )
   })
+
+  test('with handlebars partial statement, includeImport, isComponent, and isModule', () => {
+    const jsx = compile('<div><div>{{title}}</div>{{#if inEstate.any}}{{>SomePartial inEstate.assets}}{{/if}}</div>', { isComponent: true, isModule: true, includeImport: true });
+    console.log(jsx);
+    expect(jsx).toEqual(
+      'import React from "react";\nimport SomePartial from "./SomePartial";\nexport default (props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial assets={props.inEstate.assets} />}</div>);'
+    )
+  })
 })

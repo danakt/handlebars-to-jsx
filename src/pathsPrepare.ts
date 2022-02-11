@@ -39,6 +39,8 @@ const createNamespaceStack = () => {
  */
 export const prepareProgramPaths = (programTemplate: Glimmer.Template, isComponent: boolean) => {
   const namespaces = createNamespaceStack()
+  const encounteredPartialTemplates:string[] = []; // TODO: update to include references to their props
+  const getEncounteredPartialTemplates = () => encounteredPartialTemplates;
 
   // Global component namespace
   if (isComponent) {
@@ -61,6 +63,11 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template, isCompone
         if (isEachStatement(node)) {
           eachStatementEntered = true
         }
+
+        if (node.type === 'PartialStatement') {
+          const jsxElementName = (node.name as Glimmer.PathExpression).original;
+          encounteredPartialTemplates.push(jsxElementName);
+        }
       },
       exit(node: Glimmer.Node) {
         // Exit from namespace
@@ -80,4 +87,6 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template, isCompone
       }
     }
   })
+
+  return { getEncounteredPartialTemplates };
 }
