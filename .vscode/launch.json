@@ -7,7 +7,7 @@
       "request": "launch",
       "env": { "CI": "true" },
       "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "args": ["--runInBand", "--no-cache", "-t with includeImport, isComponent, and isModule true$"],
+      "args": ["--runInBand", "--no-cache", "-t with multiple of the same partial$"],
       "cwd": "${workspaceRoot}",
       "outFiles":[
           "${workspaceFolder}/dist/**/*.js",

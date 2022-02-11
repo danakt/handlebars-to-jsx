@@ -270,18 +270,44 @@ describe('include react import', () => {
   })
 })
 
+// describe('quirky behavior', () => {
+//   test('block within class attribute', () => { // TODO: update the glimmer parser to accomodate block statements within an attribute
+//     const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', true);
+//     const expectedResult = 'props => <div class={!Boolean(props.CanEdit) && "is-disabled"} />;';
+//     expect(jsx).toEqual(expectedResult);
+//   });
+// });
+
 describe('with handlebars partial statement', () => {
   test('with isModule false', () => {
     const jsx = compile('<div><div>{{title}}</div>{{#if inEstate.any}}{{>SomePartial inEstate.assets}}{{/if}}</div>', { isComponent: true, isModule: false, includeImport: true });
-    expect(jsx).toEqual(
-      'props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial assets={props.inEstate.assets} />}</div>;'
-    )
-  })
+    const expectedResult = 'props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial assets={props.inEstate.assets} />}</div>;';
+    expect(jsx).toEqual(expectedResult);
+  });
 
-  test('with includeImport, isComponent, and isModule true', () => {
-    const jsx = compile('<div><div>{{title}}</div>{{#if inEstate.any}}{{>SomePartial inEstate.assets}}{{/if}}</div>', { isComponent: true, isModule: true, includeImport: true });
-    expect(jsx).toEqual(
-      'import React from "react";\nimport SomePartial from "./SomePartial";\nexport default (props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial assets={props.inEstate.assets} />}</div>);'
-    )
-  })
-})
+  describe('with includeImport, isComponent, and isModule true', () => {
+    test('with single partial', () => {
+      const jsx = compile('<div><div>{{title}}</div>{{#if inEstate.any}}{{>SomePartial inEstate.assets}}{{/if}}</div>', { isComponent: true, isModule: true, includeImport: true });
+      const expectedResult = 'import React from "react";\nimport SomePartial from "./SomePartial";\nexport default (props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial assets={props.inEstate.assets} />}</div>);';
+      expect(jsx).toEqual(expectedResult);
+    });
+
+    test('with multiple of the same partial', () => {
+      const jsx = compile('<div>{{>Partial assets}}{{>Partial assets}}</div>', { isComponent: true, isModule: true, includeImport: true });
+      const expectedResult = 'import React from "react";\nimport Partial from "./Partial";\nexport default (props => <div><Partial assets={props.assets} /><Partial assets={props.assets} /></div>);';
+      expect(jsx).toEqual(expectedResult);
+    });
+
+    test('with multiple of the same partial, different props reference', () => { // TODO: determine how to define the partial's prop names instead of using the name from parent props...
+      const jsx = compile('<div>{{>Partial assets}}{{>Partial liabilites}}</div>', { isComponent: true, isModule: true, includeImport: true });
+      const expectedResult = 'import React from "react";\nimport Partial from "./Partial";\nexport default (props => <div><Partial assets={props.assets} /><Partial liabilites={props.liabilites} /></div>);';
+      expect(jsx).toEqual(expectedResult);
+    });
+
+    test('with multiple differing partials', () => {
+      const jsx = compile('<div>{{>FirstPartial assets}}{{>SecondPartial liabilites}}</div>', { isComponent: true, isModule: true, includeImport: true });
+      const expectedResult = 'import React from "react";\nimport FirstPartial from "./FirstPartial";\nimport SecondPartial from "./SecondPartial";\nexport default (props => <div><FirstPartial assets={props.assets} /><SecondPartial liabilites={props.liabilites} /></div>);';
+      expect(jsx).toEqual(expectedResult);
+    });
+  });
+});

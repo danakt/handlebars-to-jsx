@@ -66,7 +66,9 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template, isCompone
 
         if (node.type === 'PartialStatement') {
           const jsxElementName = (node.name as Glimmer.PathExpression).original;
-          encounteredPartialTemplates.push(jsxElementName);
+
+          if (!encounteredPartialTemplates.includes(jsxElementName))
+            encounteredPartialTemplates.push(jsxElementName);
         }
       },
       exit(node: Glimmer.Node) {

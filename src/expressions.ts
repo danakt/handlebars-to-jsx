@@ -81,6 +81,10 @@ export const resolveElementChild = (
       return createComment(statement)
     }
 
+    case 'PartialStatement': {
+      return resolveStatement(statement) as Babel.JSXElement;
+    }
+
     // If it expression, create a expression container
     default: {
       return Babel.jsxExpressionContainer(resolveStatement(statement))
