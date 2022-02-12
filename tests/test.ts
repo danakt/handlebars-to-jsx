@@ -299,6 +299,12 @@ describe('quirky behavior', () => {
     });
   })
 
+  test('alwaysIncludeContext false, should spread context as props', () => {
+    const jsx = compile('<div>{{firstname}} {{lastname}}{{>SomePartial innerContext}}</div>', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: false });
+    const expectedResult = 'props => <div>{props.firstname} {props.lastname}<SomePartial {...props.innerContext} /></div>;';
+    expect(jsx).toEqual(expectedResult);
+  })
+
   describe('custom attribute on partial statement', () => {
     test('alwaysIncludeContext false, should specify props individually', () => {
       const jsx = compile('<div>{{firstname}} {{lastname}}{{>SomePartial innerContext otherData=firstname}}</div>', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: false });
@@ -317,32 +323,32 @@ describe('quirky behavior', () => {
 describe('with handlebars partial statement', () => {
   test('with isModule false', () => {
     const jsx = compile('<div><div>{{title}}</div>{{#if inEstate.any}}{{>SomePartial inEstate.assets}}{{/if}}</div>', { isComponent: true, isModule: false, includeImport: true });
-    const expectedResult = 'props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial assets={props.inEstate.assets} />}</div>;';
+    const expectedResult = 'props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial {...props.inEstate.assets} />}</div>;';
     expect(jsx).toEqual(expectedResult);
   });
 
   describe('with includeImport, isComponent, and isModule true', () => {
     test('with single partial', () => {
       const jsx = compile('<div><div>{{title}}</div>{{#if inEstate.any}}{{>SomePartial inEstate.assets}}{{/if}}</div>', { isComponent: true, isModule: true, includeImport: true });
-      const expectedResult = 'import React from "react";\nimport SomePartial from "./SomePartial";\nexport default (props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial assets={props.inEstate.assets} />}</div>);';
+      const expectedResult = 'import React from "react";\nimport SomePartial from "./SomePartial";\nexport default (props => <div><div>{props.title}</div>{Boolean(props.inEstate.any) && <SomePartial {...props.inEstate.assets} />}</div>);';
       expect(jsx).toEqual(expectedResult);
     });
 
     test('with multiple of the same partial', () => {
       const jsx = compile('<div>{{>Partial assets}}{{>Partial assets}}</div>', { isComponent: true, isModule: true, includeImport: true });
-      const expectedResult = 'import React from "react";\nimport Partial from "./Partial";\nexport default (props => <div><Partial assets={props.assets} /><Partial assets={props.assets} /></div>);';
+      const expectedResult = 'import React from "react";\nimport Partial from "./Partial";\nexport default (props => <div><Partial {...props.assets} /><Partial {...props.assets} /></div>);';
       expect(jsx).toEqual(expectedResult);
     });
 
-    test('with multiple of the same partial, different props reference', () => { // TODO: determine how to define the partial's prop names instead of using the name from parent props...
+    test('with multiple of the same partial, different props reference', () => {
       const jsx = compile('<div>{{>Partial assets}}{{>Partial liabilites}}</div>', { isComponent: true, isModule: true, includeImport: true });
-      const expectedResult = 'import React from "react";\nimport Partial from "./Partial";\nexport default (props => <div><Partial assets={props.assets} /><Partial liabilites={props.liabilites} /></div>);';
+      const expectedResult = 'import React from "react";\nimport Partial from "./Partial";\nexport default (props => <div><Partial {...props.assets} /><Partial {...props.liabilites} /></div>);';
       expect(jsx).toEqual(expectedResult);
     });
 
     test('with multiple differing partials', () => {
       const jsx = compile('<div>{{>FirstPartial assets}}{{>SecondPartial liabilites}}</div>', { isComponent: true, isModule: true, includeImport: true });
-      const expectedResult = 'import React from "react";\nimport FirstPartial from "./FirstPartial";\nimport SecondPartial from "./SecondPartial";\nexport default (props => <div><FirstPartial assets={props.assets} /><SecondPartial liabilites={props.liabilites} /></div>);';
+      const expectedResult = 'import React from "react";\nimport FirstPartial from "./FirstPartial";\nimport SecondPartial from "./SecondPartial";\nexport default (props => <div><FirstPartial {...props.assets} /><SecondPartial {...props.liabilites} /></div>);';
       expect(jsx).toEqual(expectedResult);
     });
   });

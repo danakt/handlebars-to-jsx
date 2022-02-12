@@ -86,25 +86,33 @@ export const convertElement = (node: Glimmer.ElementNode): Babel.JSXElement => {
   )
 }
 
-// TODO: to get the correct prop name, we must have already converted the partial into JSX.
-// TODO: generate lookup of pre-converted partials, allowing us to verify & set prop names correctly.
-const createPropAttributeFromPartialParamExpression = (paramExpression: Glimmer.Expression): Babel.JSXAttribute | null => {
-  const { includeContext } = getProgramOptions();
-  const paramAsPathExpression = paramExpression as Glimmer.PathExpression;
-  const propName = includeContext ? DEFAULT_PARTIAL_NAMESPACE : paramAsPathExpression.parts[paramAsPathExpression.parts.length - 1];
-  const attributeName = convertHTMLAttribute(propName);
+const createPropsSpreadContextAttribute = (paramExpression: Glimmer.Expression): Babel.JSXAttribute => {
+  const innerValueExpression = resolveExpression(paramExpression);
+  const propsSpreadElement = Babel.spreadElement(innerValueExpression);
+  const valueExpression = Babel.objectExpression([propsSpreadElement]);
+  const valueExpressionContainer = Babel.jsxExpressionContainer(valueExpression);
+  const nameIdentifier = Babel.jsxIdentifier(DEFAULT_PARTIAL_NAMESPACE);
 
-  if (!/^[_\-A-z0-9]+$/.test(attributeName)) {
-    return null;
+  return Babel.jsxAttribute(nameIdentifier, valueExpressionContainer);
+};
+
+const createPropsSpreadAttribute = (paramExpression: Glimmer.Expression): Babel.JSXSpreadAttribute => {
+  const innerValueExpression = resolveExpression(paramExpression)
+  return Babel.jsxSpreadAttribute(innerValueExpression);
+};
+
+// TODO: add custom attributes alongside the spread element within the object expression
+const getAttributes = (partialStatement: Glimmer.PartialStatement): (Babel.JSXAttribute | Babel.JSXSpreadAttribute)[] => {
+  if (partialStatement.params.length === 0) {
+    return [];
   }
 
-  const name = Babel.jsxIdentifier(attributeName);
-  const innerValueExpression = resolveExpression(paramAsPathExpression);
-  const valueExpression = includeContext ? Babel.objectExpression([Babel.spreadElement(innerValueExpression)]) : innerValueExpression; // TODO: add custom attributes alongside the spread element within the object expression
-  const valueExpressionContainer = Babel.jsxExpressionContainer(valueExpression);
+  const { includeContext } = getProgramOptions();
+  const contextParameter = partialStatement.params[0];
+  const propsSpreadAttribute = includeContext ? createPropsSpreadContextAttribute(contextParameter) : createPropsSpreadAttribute(contextParameter);
 
-  return Babel.jsxAttribute(name, valueExpressionContainer);
-};
+  return [propsSpreadAttribute];
+}
 
 /**
  * Converts a partial statement from Handlebars to a JSXElement
@@ -112,7 +120,7 @@ const createPropAttributeFromPartialParamExpression = (paramExpression: Glimmer.
  export const convertPartialStatement = (partialStatement: Glimmer.PartialStatement): Babel.JSXElement => {
   const jsxElementName = (partialStatement.name as Glimmer.PathExpression).original;
   const tagName = Babel.jsxIdentifier(jsxElementName)
-  const attributes = partialStatement.params.map(createPropAttributeFromPartialParamExpression).filter(Boolean) as Babel.JSXAttribute[]
+  const attributes = getAttributes(partialStatement);
   const isElementSelfClosing = true;
 
   return Babel.jsxElement(

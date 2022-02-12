@@ -86,11 +86,14 @@
       "lib/**",
       "ui/**"
     ],
-	"coveragePathIgnorePatterns": [
-	  "/node_modules/",
-	  "/_dependencies/"
-	],
-	"roots": ["<rootDir>/src/", "<rootDir>/tests/"]
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/_dependencies/"
+    ],
+    "roots": [
+      "<rootDir>/src/",
+      "<rootDir>/tests/"
+    ]
   },
   "husky": {
     "hooks": {
