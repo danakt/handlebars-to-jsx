@@ -3,6 +3,7 @@ import * as Babel              from '@babel/types'
 import { createRootChildren }  from './expressions'
 import { prepareProgramPaths } from './pathsPrepare'
 import { createComponent }     from './componentCreator'
+import { setProgramOptions }   from './programContext'
 
 const getImportDirectives = (partialTemplates: string[]) => {
   const reactImport = Babel.importDeclaration(
@@ -23,7 +24,7 @@ const getImportDirectives = (partialTemplates: string[]) => {
  * @param isComponent Should return JSX code wrapped as a function component
  * @param isModule Should return generated code exported as default
  * @param includeImport Should include react import
- * @param includeContext Should always include react import
+ * @param includeContext Should always include template context as property of props
  */
 export const createProgram = (
   hbsProgram: Glimmer.Template,
@@ -32,6 +33,7 @@ export const createProgram = (
   includeImport: boolean,
   includeContext: boolean
 ): Babel.Program => {
+  setProgramOptions({ isComponent, isModule, includeImport, includeContext });
   const { getEncounteredPartialTemplates } = prepareProgramPaths(hbsProgram, isComponent, includeContext)
 
   const componentBody = createRootChildren(hbsProgram.body)

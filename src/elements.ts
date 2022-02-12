@@ -4,6 +4,8 @@ import * as isSelfClosing                                  from 'is-self-closing
 import * as convertHTMLAttribute                           from 'react-attr-converter'
 import { createConcat, resolveExpression, createChildren } from './expressions'
 import { createStyleObject }                               from './styles'
+import { getProgramOptions }                               from './programContext'
+import { DEFAULT_PARTIAL_NAMESPACE } from './constants'
 
 /**
  * Creates JSX fragment
@@ -87,18 +89,21 @@ export const convertElement = (node: Glimmer.ElementNode): Babel.JSXElement => {
 // TODO: to get the correct prop name, we must have already converted the partial into JSX.
 // TODO: generate lookup of pre-converted partials, allowing us to verify & set prop names correctly.
 const createPropAttributeFromPartialParamExpression = (paramExpression: Glimmer.Expression): Babel.JSXAttribute | null => {
+  const { includeContext } = getProgramOptions();
   const paramAsPathExpression = paramExpression as Glimmer.PathExpression;
-  const propName = paramAsPathExpression.parts[paramAsPathExpression.parts.length - 1];
-  const attributeName = convertHTMLAttribute(propName)
+  const propName = includeContext ? DEFAULT_PARTIAL_NAMESPACE : paramAsPathExpression.parts[paramAsPathExpression.parts.length - 1];
+  const attributeName = convertHTMLAttribute(propName);
 
   if (!/^[_\-A-z0-9]+$/.test(attributeName)) {
-    return null
+    return null;
   }
 
-  const name = Babel.jsxIdentifier(attributeName)
-  const valueExpression = Babel.jsxExpressionContainer(resolveExpression(paramAsPathExpression));
+  const name = Babel.jsxIdentifier(attributeName);
+  const innerValueExpression = resolveExpression(paramAsPathExpression);
+  const valueExpression = includeContext ? Babel.objectExpression([Babel.spreadElement(innerValueExpression)]) : innerValueExpression; // TODO: add custom attributes alongside the spread element within the object expression
+  const valueExpressionContainer = Babel.jsxExpressionContainer(valueExpression);
 
-  return Babel.jsxAttribute(name, valueExpression)
+  return Babel.jsxAttribute(name, valueExpressionContainer);
 };
 
 /**

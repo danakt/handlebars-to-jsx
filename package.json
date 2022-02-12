@@ -94,7 +94,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "npm run build && npm test"
+      "pre-push": ""
     }
   }
 }
