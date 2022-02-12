@@ -3,7 +3,7 @@ import * as Babel                         from '@babel/types'
 import { createFragment, convertElement, convertPartialStatement } from './elements'
 import { resolveBlockStatement }          from './blockStatements'
 import { createComment }                  from './comments'
-import { DEFAULT_UNIDENTIFIED_NAMESPACE } from './constants'
+import { DEFAULT_GLOBAL_NAMESPACE, DEFAULT_PARTIAL_NAMESPACE } from './constants'
 
 /**
  * Converts the Handlebars expression to NON-JSX JS-compatible expression.
@@ -144,8 +144,16 @@ export const createPath = (pathExpression: Glimmer.PathExpression): Babel.Identi
   let acc: Babel.Identifier | Babel.MemberExpression = Babel.identifier(parts[0]);
 
   for (let i = 1; i < parts.length; i++) {
-    const nextPart = parts[i] ?? DEFAULT_UNIDENTIFIED_NAMESPACE;
-    acc = appendToPath(acc, Babel.identifier(nextPart))
+    // NOTE: props will never be null in a React context but the context of a Handlebars partial can be.
+    // if a partial checks the context directly (i.e. '.'), the context must be a property of props
+    // TODO: include an option to always use props.context to simplify passing props into a partial (e.g. <Partial name={...} list={...} /> vs <Partial context={{ name: ..., list: ... }} />)
+    // NOTE: if a partial treats the context as always being defined & not null, it can safely be provided props individually as JSX attributes
+    if (!parts[i] && i > 0 && parts[i - 1] === `${DEFAULT_GLOBAL_NAMESPACE}.${DEFAULT_PARTIAL_NAMESPACE}`) { // TODO: clean up this hack to allow a global context
+      continue;
+    }
+
+    const nextPart = parts[i] ?? DEFAULT_PARTIAL_NAMESPACE;
+    acc = appendToPath(acc, Babel.identifier(nextPart));
   }
 
   return acc

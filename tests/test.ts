@@ -277,11 +277,27 @@ describe('quirky behavior', () => {
   //   expect(jsx).toEqual(expectedResult);
   // });
 
-  test('unnamed context in partial template', () => {
-    const jsx = compile('{{#if .}}<div>{{#each .}}<span>{{Name}}</span>{{/each}}</div>{{/if}}', true);
-    const expectedResult = 'props => Boolean(props.context) && <div>{props.context.map((item, i) => <span key={i}>{item.Name}</span>)}</div>;';
-    expect(jsx).toEqual(expectedResult);
-  });
+  [true, false].forEach((alwaysIncludeContext) => {
+    test('direct context reference in partial template, context is contained within props', () => {
+      const jsx = compile('{{#if .}}<div>{{#each .}}<span>{{Name}}</span>{{/each}}</div>{{/if}}', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext });
+      const expectedResult = 'props => Boolean(props.context) && <div>{props.context.map((item, i) => <span key={i}>{item.Name}</span>)}</div>;';
+      expect(jsx).toEqual(expectedResult);
+    });
+  })
+
+  describe('indirect context reference in partial template', () => {
+    test('with alwaysIncludeContext false, leaves props as the context', () => {
+      const jsx = compile('{{#if Items}}<div>{{#each Items}}<span>{{Name}}</span>{{/each}}</div>{{/if}}', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: false });
+      const expectedResult = 'props => Boolean(props.Items) && <div>{props.Items.map((item, i) => <span key={i}>{item.Name}</span>)}</div>;';
+      expect(jsx).toEqual(expectedResult);
+    });
+  
+    test('with alwaysIncludeContext true, context is contained within props', () => {
+      const jsx = compile('{{#if Items}}<div>{{#each Items}}<span>{{Name}}</span>{{/each}}</div>{{/if}}', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: true });
+      const expectedResult = 'props => Boolean(props.context.Items) && <div>{props.context.Items.map((item, i) => <span key={i}>{item.Name}</span>)}</div>;';
+      expect(jsx).toEqual(expectedResult);
+    });
+  })
 });
 
 describe('with handlebars partial statement', () => {

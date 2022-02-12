@@ -1,5 +1,5 @@
 import { AST as Glimmer, traverse } from 'glimmer-engine/dist/@glimmer/syntax'
-import { DEFAULT_EACH_LOOP_NAMESPACE, DEFAULT_GLOBAL_NAMESPACE }   from './constants'
+import { DEFAULT_EACH_LOOP_NAMESPACE, DEFAULT_GLOBAL_NAMESPACE, DEFAULT_PARTIAL_NAMESPACE }   from './constants'
 
 /**
  * Checks is each statement
@@ -37,14 +37,15 @@ const createNamespaceStack = () => {
 /**
  * Prepares paths Glimmer AST for compatible with JS AST.
  */
-export const prepareProgramPaths = (programTemplate: Glimmer.Template, isComponent: boolean) => {
+export const prepareProgramPaths = (programTemplate: Glimmer.Template, isComponent: boolean, includeContext: boolean) => {
   const namespaces = createNamespaceStack()
   const encounteredPartialTemplates:string[] = []; // TODO: update to include references to their props
   const getEncounteredPartialTemplates = () => encounteredPartialTemplates;
 
   // Global component namespace
   if (isComponent) {
-    namespaces.push({ node: programTemplate, name: DEFAULT_GLOBAL_NAMESPACE })
+    const globalNamespace = includeContext ? `${DEFAULT_GLOBAL_NAMESPACE}.${DEFAULT_PARTIAL_NAMESPACE}` : DEFAULT_GLOBAL_NAMESPACE;
+    namespaces.push({ node: programTemplate, name: globalNamespace })
   }
 
   let eachStatementEntered = false
@@ -83,9 +84,7 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template, isCompone
     PathExpression(node: Glimmer.PathExpression) {
       // Add prefixes
       if (namespaces.length) {
-        node.parts.unshift(namespaces.head().name) // is this the bug???
-        // node.tail.unshift(node.head.);
-        // node.head = namespaces.head().name;
+        node.parts.unshift(namespaces.head().name)
       }
     }
   })

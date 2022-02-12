@@ -11,6 +11,7 @@ import { createProgram } from './program'
  * @param [options.isComponent] Should return JSX code wrapped as a function component
  * @param [options.isModule] Should return generated code exported as default
  * @param [options.includeImport] Should include react import
+ * @param [options.alwaysIncludeContext] Should always contain a template's context reference within the top-level props
  */
 export function compile(hbsCode: string, isComponent?: boolean): string
 export function compile(
@@ -19,11 +20,12 @@ export function compile(
     isComponent?: boolean
     isModule?: boolean
     includeImport?: boolean
+    alwaysIncludeContext?: boolean
   }
 ): string
 export function compile(
   hbsCode: string,
-  options: boolean | { isComponent?: boolean; isModule?: boolean; includeImport?: boolean } = true
+  options: boolean | { isComponent?: boolean; isModule?: boolean; includeImport?: boolean, alwaysIncludeContext?: boolean } = true
 ): string {
   if (typeof options === 'boolean') {
     return compile(hbsCode, { isComponent: options })
@@ -32,9 +34,10 @@ export function compile(
   const isComponent = !!options.isComponent
   const isModule = !!options.isModule
   const includeImport = !!options.includeImport && isModule
+  const includeContext = !!options.alwaysIncludeContext
 
   const glimmerProgram = preprocess(hbsCode)
-  const babelProgram: Babel.Program = createProgram(glimmerProgram, isComponent, isModule, includeImport)
+  const babelProgram: Babel.Program = createProgram(glimmerProgram, isComponent, isModule, includeImport, includeContext)
 
   return generate(babelProgram).code
 }

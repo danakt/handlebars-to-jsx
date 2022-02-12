@@ -23,14 +23,16 @@ const getImportDirectives = (partialTemplates: string[]) => {
  * @param isComponent Should return JSX code wrapped as a function component
  * @param isModule Should return generated code exported as default
  * @param includeImport Should include react import
+ * @param includeContext Should always include react import
  */
 export const createProgram = (
   hbsProgram: Glimmer.Template,
   isComponent: boolean,
   isModule: boolean,
-  includeImport: boolean
+  includeImport: boolean,
+  includeContext: boolean
 ): Babel.Program => {
-  const { getEncounteredPartialTemplates } = prepareProgramPaths(hbsProgram, isComponent)
+  const { getEncounteredPartialTemplates } = prepareProgramPaths(hbsProgram, isComponent, includeContext)
 
   const componentBody = createRootChildren(hbsProgram.body)
   const expression = isComponent ? createComponent(componentBody) : componentBody
