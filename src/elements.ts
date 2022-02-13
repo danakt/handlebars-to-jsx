@@ -86,32 +86,62 @@ export const convertElement = (node: Glimmer.ElementNode): Babel.JSXElement => {
   )
 }
 
-const createPropsSpreadContextAttribute = (paramExpression: Glimmer.Expression): Babel.JSXAttribute => {
-  const innerValueExpression = resolveExpression(paramExpression);
-  const propsSpreadElement = Babel.spreadElement(innerValueExpression);
-  const valueExpression = Babel.objectExpression([propsSpreadElement]);
+const createObjectProperty = (hashPair: Glimmer.HashPair): Babel.ObjectProperty => {
+  const propertyNameIdentifier = Babel.identifier(hashPair.key);
+  const innerValueExpression = resolveExpression(hashPair.value);
+
+  return Babel.objectProperty(propertyNameIdentifier, innerValueExpression);
+};
+
+const createJsxAttribute = (hashPair: Glimmer.HashPair): Babel.JSXAttribute => {
+  const nameIdentifier = Babel.jsxIdentifier(hashPair.key);
+  const innerValueExpression = resolveExpression(hashPair.value);
+  const valueExpressionContainer = Babel.jsxExpressionContainer(innerValueExpression);
+
+  return Babel.jsxAttribute(nameIdentifier, valueExpressionContainer);
+};
+
+const createPropsSpreadContextAttribute = (paramExpression: Glimmer.Expression | null, customAttributes: Glimmer.HashPair[]): Babel.JSXAttribute | null => {
+  const customProperties: (Babel.SpreadElement | Babel.ObjectProperty)[] = customAttributes.map(createObjectProperty);
+
+  if (paramExpression !== null) {
+    const innerValueExpression = resolveExpression(paramExpression);
+    const propsSpreadElement = Babel.spreadElement(innerValueExpression);
+    customProperties.unshift(propsSpreadElement);
+  }
+
+  if (customProperties.length === 0) {
+    return null;
+  }
+
+  const valueExpression = Babel.objectExpression(customProperties);
   const valueExpressionContainer = Babel.jsxExpressionContainer(valueExpression);
   const nameIdentifier = Babel.jsxIdentifier(DEFAULT_PARTIAL_NAMESPACE);
 
   return Babel.jsxAttribute(nameIdentifier, valueExpressionContainer);
 };
 
-const createPropsSpreadAttribute = (paramExpression: Glimmer.Expression): Babel.JSXSpreadAttribute => {
+const createPropsSpreadAttribute = (paramExpression: Glimmer.Expression | null): Babel.JSXSpreadAttribute | null => {
+  if (paramExpression === null) {
+    return null;
+  }
+
   const innerValueExpression = resolveExpression(paramExpression)
+
   return Babel.jsxSpreadAttribute(innerValueExpression);
 };
 
-// TODO: add custom attributes alongside the spread element within the object expression
 const getAttributes = (partialStatement: Glimmer.PartialStatement): (Babel.JSXAttribute | Babel.JSXSpreadAttribute)[] => {
-  if (partialStatement.params.length === 0) {
+  const { includeContext } = getProgramOptions();
+  const contextParameter = partialStatement.params.length === 0 ? null : partialStatement.params[0];
+  const propsSpreadAttribute = includeContext ? createPropsSpreadContextAttribute(contextParameter, partialStatement.hash.pairs) : createPropsSpreadAttribute(contextParameter);
+  if (propsSpreadAttribute === null) {
     return [];
   }
 
-  const { includeContext } = getProgramOptions();
-  const contextParameter = partialStatement.params[0];
-  const propsSpreadAttribute = includeContext ? createPropsSpreadContextAttribute(contextParameter) : createPropsSpreadAttribute(contextParameter);
+  const customAttributes = includeContext ? [] : partialStatement.hash.pairs.map(createJsxAttribute);
 
-  return [propsSpreadAttribute];
+  return [propsSpreadAttribute, ...customAttributes];
 }
 
 /**
