@@ -257,22 +257,24 @@ describe('include react import', () => {
   })
 })
 
-describe('quirky behavior', () => {
-  // test('block within class attribute', () => { // TODO: update the glimmer parser to accomodate block statements within an attribute
-  //   const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', true);
-  //   const expectedResult = 'props => <div class={!Boolean(props.CanEdit) && "is-disabled"} />;';
-  //   expect(jsx).toEqual(expectedResult);
-  // });
+describe('block within attribute value', () => {
+  test('unless helper within class attribute', () => { // TODO: update the glimmer parser to accomodate block statements within an attribute
+    const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', true);
+    const expectedResult = 'props => <div class={!Boolean(props.CanEdit) && "is-disabled"} />;';
+    expect(jsx).toEqual(expectedResult);
+  });
+});
 
+describe('context references within partial template', () => {
   [true, false].forEach((alwaysIncludeContext) => {
-    test('direct context reference in partial template, context is contained within props', () => {
+    test('direct context reference, context is contained within props', () => {
       const jsx = compile('{{#if .}}<div>{{#each .}}<span>{{Name}}</span>{{/each}}</div>{{/if}}', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext });
       const expectedResult = 'props => Boolean(props.context) && <div>{props.context.map((item, i) => <span key={i}>{item.Name}</span>)}</div>;';
       expect(jsx).toEqual(expectedResult);
     });
-  })
+  });
 
-  describe('indirect context reference in partial template', () => {
+  describe('indirect context reference', () => {
     test('with alwaysIncludeContext false, leaves props as the context', () => {
       const jsx = compile('{{#if Items}}<div>{{#each Items}}<span>{{Name}}</span>{{/each}}</div>{{/if}}', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: false });
       const expectedResult = 'props => Boolean(props.Items) && <div>{props.Items.map((item, i) => <span key={i}>{item.Name}</span>)}</div>;';
@@ -284,26 +286,6 @@ describe('quirky behavior', () => {
       const expectedResult = 'props => Boolean(props.context.Items) && <div>{props.context.Items.map((item, i) => <span key={i}>{item.Name}</span>)}</div>;';
       expect(jsx).toEqual(expectedResult);
     });
-  })
-
-  test('alwaysIncludeContext false, should spread context as props', () => {
-    const jsx = compile('<div>{{firstname}} {{lastname}}{{>SomePartial innerContext}}</div>', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: false });
-    const expectedResult = 'props => <div>{props.firstname} {props.lastname}<SomePartial {...props.innerContext} /></div>;';
-    expect(jsx).toEqual(expectedResult);
-  })
-
-  describe('custom attribute on partial statement', () => {
-    test('alwaysIncludeContext false, should specify props individually', () => {
-      const jsx = compile('<div>{{firstname}} {{lastname}}{{>SomePartial innerContext otherData=firstname}}</div>', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: false });
-      const expectedResult = 'props => <div>{props.firstname} {props.lastname}<SomePartial {...props.innerContext} otherData={props.firstname} /></div>;';
-      expect(jsx).toEqual(expectedResult);
-    })
-  
-    test('alwaysIncludeContext true, should include custom attributes in context property', () => {
-      const jsx = compile('<div>{{firstname}} {{lastname}}{{>SomePartial innerContext otherData=firstname}}</div>', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: true });
-      const expectedResult = 'props => <div>{props.context.firstname} {props.context.lastname}<SomePartial context={{ ...props.context.innerContext, otherData: props.context.firstname }} /></div>;';
-      expect(jsx).toEqual(expectedResult);
-    })
   })
 });
 
@@ -339,4 +321,24 @@ describe('with handlebars partial statement', () => {
       expect(jsx).toEqual(expectedResult);
     });
   });
+
+  test('alwaysIncludeContext false, should spread context as props', () => {
+    const jsx = compile('<div>{{firstname}} {{lastname}}{{>SomePartial innerContext}}</div>', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: false });
+    const expectedResult = 'props => <div>{props.firstname} {props.lastname}<SomePartial {...props.innerContext} /></div>;';
+    expect(jsx).toEqual(expectedResult);
+  })
+
+  describe('custom attribute on partial statement', () => {
+    test('alwaysIncludeContext false, should specify props individually', () => {
+      const jsx = compile('<div>{{firstname}} {{lastname}}{{>SomePartial innerContext otherData=firstname}}</div>', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: false });
+      const expectedResult = 'props => <div>{props.firstname} {props.lastname}<SomePartial {...props.innerContext} otherData={props.firstname} /></div>;';
+      expect(jsx).toEqual(expectedResult);
+    })
+  
+    test('alwaysIncludeContext true, should include custom attributes in context property', () => {
+      const jsx = compile('<div>{{firstname}} {{lastname}}{{>SomePartial innerContext otherData=firstname}}</div>', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: true });
+      const expectedResult = 'props => <div>{props.context.firstname} {props.context.lastname}<SomePartial context={{ ...props.context.innerContext, otherData: props.context.firstname }} /></div>;';
+      expect(jsx).toEqual(expectedResult);
+    })
+  })
 });

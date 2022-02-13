@@ -37,9 +37,32 @@ export function compile(
   const includeImport = !!options.includeImport && isModule
   const includeContext = !!options.alwaysIncludeContext
 
-  const glimmerProgram = preprocess(hbsCode)
+  const compatibleHandlebarsTemplate = preProcessBlockStatementsWithinAttributes(hbsCode);
+  const glimmerProgram = preprocess(compatibleHandlebarsTemplate)
   const babelProgram: Babel.Program = createProgram(glimmerProgram, isComponent, isModule, includeImport, includeContext)
   const generatedCode = generate(babelProgram).code;
 
   return print(generatedCode);
 }
+
+const getAllAttributesRegex = /(\w+)=["']?((?:.(?!["']?\s+(?:\S+)=|\s*\/?[>"']))+.)["']?/g;
+const containsMustacheBlockRegex = '{{.*}}.*{{/.*}}';
+const preProcessBlockStatementsWithinAttributes = (handlebarsTemplate: string):string => {
+  const rawAttributes = handlebarsTemplate.match(getAllAttributesRegex)?.filter((rawValue) => rawValue.match(containsMustacheBlockRegex));
+  if (!rawAttributes || rawAttributes.length === 0) {
+    return handlebarsTemplate;
+  }
+
+  const attributeKeyPairs = rawAttributes.map((rawValue) => {
+    const keyValueDividerIndex = rawValue.indexOf('=');
+    return {
+      key: rawValue.substring(0, keyValueDividerIndex).trim(),
+      value: rawValue.substring(keyValueDividerIndex + 1).trim()
+    };
+  });
+  attributeKeyPairs.forEach(({ key, value }) => {
+    throw (`Mustache found in <${key}>: ${value}`);
+  });
+
+  return handlebarsTemplate;
+};
