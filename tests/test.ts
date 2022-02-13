@@ -114,9 +114,7 @@ describe('element attributes', () => {
   })
 
   test('should convert the "styles" string to stylesObject', () => {
-    expect(compile('<div style="background-image: url(\'image.png\'); margin-left: 10px" />', false)).toBe(
-      recompile('<div style={{ "backgroundImage": "url(\'image.png\')", "marginLeft": "10px" }} />')
-    )
+    expect(compile('<div style="background-image: url(\'image.png\'); margin-left: 10px" />', false)).toEqual(`<div style={{ "backgroundImage": "url('image.png')", "marginLeft": "10px" }} />;`)
   })
 
   test('should convert the "styles" string with variables to stylesObject', () => {
@@ -126,39 +124,28 @@ describe('element attributes', () => {
         '<div style="background-image: url(\'{{some.imageSrc}}\'); margin-left: 10px; width: {{some.width}}px; margin-top: 10px; text-align: {{textAlign}}" />',
         false
       )
-    ).toBe(
-      recompile(
-        `<div style={{ 
-          "backgroundImage": "url('" + some.imageSrc + "')", 
-          "marginLeft": "10px", 
-          "width": some.width + "px", 
-          "marginTop": "10px", 
-          "textAlign": textAlign
-        }} />`
-      )
-    )
+    ).toEqual(`<div style={{ "backgroundImage": "url('" + some.imageSrc + "')", "marginLeft": "10px", "width": some.width + "px", "marginTop": "10px", "textAlign": textAlign }} />;`)
 
     // Trailing semicolon
-    expect(compile('<div style="background-image: url(\'{{some.imageSrc}}\');" />', false)).toBe(
-      recompile(`<div style={{ "backgroundImage": "url('" + some.imageSrc + "')" }} />`)
-    )
+    expect(compile('<div style="background-image: url(\'{{some.imageSrc}}\');" />', false)).toEqual(`<div style={{ "backgroundImage": "url('" + some.imageSrc + "')" }} />;`)
 
     // Expression in key
-    expect(compile('<div style="background-{{image}}: url(\'{{some.imageSrc}}\');" />', false)).toBe(
-      recompile(`<div style={{ ["background-" + image]: "url('" + some.imageSrc + "')" }} />`)
-    )
+    expect(compile('<div style="background-{{image}}: url(\'{{some.imageSrc}}\');" />', false)).toEqual(`<div style={{ ["background-" + image]: "url('" + some.imageSrc + "')" }} />;`)
   })
 })
 
 describe('comments', () => {
   test('should convert comment in JSX code', () => {
-    expect(compile('<div>{{~! comment ~}}</div>', false)).toBe(recompile('<div>{/* comment */}</div>;'))
-    expect(compile('<div>{{~!-- long-comment --~}}</div>', false)).toBe(recompile('<div>{/* long-comment */}</div>;'))
-    expect(compile('<div>{{! comment ~}}</div>', false)).toBe(recompile('<div>{/* comment */}</div>;'))
-    expect(compile('<div>{{!-- long-comment --~}}</div>', false)).toBe(recompile('<div>{/* long-comment */}</div>;'))
-    expect(compile('<div>{{~! comment }}</div>', false)).toBe(recompile('<div>{/* comment */}</div>;'))
-    expect(compile('<div>{{~!-- long-comment --}}</div>', false)).toBe(recompile('<div>{/* long-comment */}</div>;'))
-    expect(compile('<div><!-- html comment --></div>', false)).toBe(recompile('<div>{/* html comment */}</div>;'))
+    const commentText = 'EVEN LONGER COMMENT';
+    const expectedJsx = `<div>{ /* ${commentText} */ }</div>;`;
+
+    expect(compile(`<div>{{~! ${commentText} ~}}</div>`, false)).toEqual(expectedJsx)
+    expect(compile(`<div>{{~!-- ${commentText} --~}}</div>`, false)).toEqual(expectedJsx)
+    expect(compile(`<div>{{! ${commentText} ~}}</div>`, false)).toEqual(expectedJsx)
+    expect(compile(`<div>{{!-- ${commentText} --~}}</div>`, false)).toEqual(expectedJsx)
+    expect(compile(`<div>{{~! ${commentText} }}</div>`, false)).toEqual(expectedJsx)
+    expect(compile(`<div>{{~!-- ${commentText} --}}</div>`, false)).toEqual(expectedJsx)
+    expect(compile(`<div><!-- ${commentText} --></div>`, false)).toEqual(expectedJsx)
   })
 
   test("shouldn't convert top-level comment", () => {

@@ -3,6 +3,7 @@ import { preprocess }    from 'glimmer-engine/dist/@glimmer/syntax'
 import generate          from '@babel/generator'
 import * as Babel        from '@babel/types'
 import { createProgram } from './program'
+import { print }         from './printer';
 
 /**
  * Converts Handlebars code to JSX code
@@ -38,6 +39,7 @@ export function compile(
 
   const glimmerProgram = preprocess(hbsCode)
   const babelProgram: Babel.Program = createProgram(glimmerProgram, isComponent, isModule, includeImport, includeContext)
+  const generatedCode = generate(babelProgram).code;
 
-  return generate(babelProgram).code
+  return print(generatedCode);
 }
