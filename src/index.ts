@@ -1,9 +1,10 @@
 /* eslint-disable import/export */
-import { preprocess }    from 'glimmer-engine/dist/@glimmer/syntax'
-import generate          from '@babel/generator'
-import * as Babel        from '@babel/types'
-import { createProgram } from './program'
-import { print }         from './printer';
+import { preprocess }                           from 'glimmer-engine/dist/@glimmer/syntax';
+import generate                                 from '@babel/generator';
+import * as Babel                               from '@babel/types';
+import { createProgram }                        from './program';
+import { print }                                from './printer';
+import { preProcessUnsupportedParserFeatures }  from './unsupportedParserFeatures';
 
 /**
  * Converts Handlebars code to JSX code
@@ -37,32 +38,10 @@ export function compile(
   const includeImport = !!options.includeImport && isModule
   const includeContext = !!options.alwaysIncludeContext
 
-  const compatibleHandlebarsTemplate = preProcessBlockStatementsWithinAttributes(hbsCode);
+  const compatibleHandlebarsTemplate = preProcessUnsupportedParserFeatures(hbsCode);
   const glimmerProgram = preprocess(compatibleHandlebarsTemplate)
   const babelProgram: Babel.Program = createProgram(glimmerProgram, isComponent, isModule, includeImport, includeContext)
   const generatedCode = generate(babelProgram).code;
 
   return print(generatedCode);
 }
-
-const getAllAttributesRegex = /(\w+)=["']?((?:.(?!["']?\s+(?:\S+)=|\s*\/?[>"']))+.)["']?/g;
-const containsMustacheBlockRegex = '{{.*}}.*{{/.*}}';
-const preProcessBlockStatementsWithinAttributes = (handlebarsTemplate: string):string => {
-  const rawAttributes = handlebarsTemplate.match(getAllAttributesRegex)?.filter((rawValue) => rawValue.match(containsMustacheBlockRegex));
-  if (!rawAttributes || rawAttributes.length === 0) {
-    return handlebarsTemplate;
-  }
-
-  const attributeKeyPairs = rawAttributes.map((rawValue) => {
-    const keyValueDividerIndex = rawValue.indexOf('=');
-    return {
-      key: rawValue.substring(0, keyValueDividerIndex).trim(),
-      value: rawValue.substring(keyValueDividerIndex + 1).trim()
-    };
-  });
-  attributeKeyPairs.forEach(({ key, value }) => {
-    throw (`Mustache found in <${key}>: ${value}`);
-  });
-
-  return handlebarsTemplate;
-};
