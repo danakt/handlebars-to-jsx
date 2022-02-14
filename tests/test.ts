@@ -257,8 +257,9 @@ describe('include react import', () => {
   })
 })
 
+// TODO: improve support for helpers (NOTE: block statements within attributes are converted to helper syntax with the associated helper function)
 // describe('block within attribute value', () => {
-//   test('unless helper within class attribute', () => { // TODO: update the glimmer parser to accomodate block statements within an attribute
+//   test('unless helper within class attribute', () => {
 //     const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', true);
 //     const expectedResult = 'props => <div class={!Boolean(props.CanEdit) && "is-disabled"} />;';
 //     expect(jsx).toEqual(expectedResult);
