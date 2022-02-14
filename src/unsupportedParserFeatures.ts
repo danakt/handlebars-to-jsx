@@ -87,9 +87,9 @@ const buildNewTemplate = (originalTemplate: string, replacementAttributes: Repla
   let template = '';
   let currentIndexInOriginal = 0;
   replacementAttributes.forEach(({ attribute, originalStartIndex, originalLength }) => {
-    const portionBeforeAttribute = originalTemplate.substring(currentIndexInOriginal, originalStartIndex - currentIndexInOriginal);
+    const portionBeforeAttribute = originalTemplate.substring(currentIndexInOriginal, originalStartIndex);
     template += `${portionBeforeAttribute}${attribute}`;
-    currentIndexInOriginal += originalStartIndex + originalLength;
+    currentIndexInOriginal = originalStartIndex + originalLength;
   });
   template += originalTemplate.substring(currentIndexInOriginal);
 

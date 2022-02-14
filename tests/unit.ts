@@ -60,14 +60,14 @@ describe('preProcessUnsupportedParserFeatures', () => {
         expectedTemplate: '<div class="{{classUnlessHelper isTrue class}}"><div>',
         expectedHelpers: ["const classUnlessHelper = (isTrue, class) => !isTrue ? `${class} other-class` : ' other-class';"]
       },
-      // {
-      //   template: '<div id="{{#if isTrue}}{{id}}{{/if}}" title={{#unless isTrue}}title{{/if}}><div>',
-      //   expectedTemplate: '<div id="{{idIfHelper isTrue id}}" title="{{titleUnlessHelper isTrue}}"><div>',
-      //   expectedHelpers: [
-      //     "const idIfHelper = (isTrue, id) => isTrue ? `${id}` : '';",
-      //     "const titleUnlessHelper = (isTrue) => isTrue ? 'title' : '';"
-      //   ]
-      // }
+      {
+        template: '<div id="{{#if isTrue}}{{id}}{{/if}}" title={{#unless isTrue}}title{{/if}}><div>',
+        expectedTemplate: '<div id="{{idIfHelper isTrue id}}" title="{{titleUnlessHelper isTrue}}"><div>',
+        expectedHelpers: [
+          "const idIfHelper = (isTrue, id) => isTrue ? `${id}` : '';",
+          "const titleUnlessHelper = (isTrue) => !isTrue ? 'title' : '';"
+        ]
+      }
     ].forEach(({ template, expectedTemplate, expectedHelpers }) => {
       test('should return template with helper functions', () => {
         const { template: templateResult, helpers: helpersResult } = preProcessUnsupportedParserFeatures(template);
