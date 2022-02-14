@@ -11,6 +11,8 @@
       "cwd": "${workspaceRoot}",
       "outFiles":[
           "${workspaceFolder}/dist/**/*.js",
+          "${workspaceFolder}/tests/**/*.js",
+          "${workspaceFolder}/src/**/*.js",
           "!**/node_modules/**"
       ],
       "protocol": "inspector",
