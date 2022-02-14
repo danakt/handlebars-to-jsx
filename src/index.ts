@@ -5,6 +5,7 @@ import * as Babel                               from '@babel/types';
 import { createProgram }                        from './program';
 import { print }                                from './printer';
 import { preProcessUnsupportedParserFeatures }  from './unsupportedParserFeatures';
+import { HELPERS_PLACEHOLDER }                  from './constants';
 
 /**
  * Converts Handlebars code to JSX code
@@ -39,9 +40,15 @@ export function compile(
   const includeContext = !!options.alwaysIncludeContext
 
   const preparedTemplate = preProcessUnsupportedParserFeatures(hbsCode);
+  const includeHelpersPlaceholder = preparedTemplate.helpers.length > 0;
+
   const glimmerProgram = preprocess(preparedTemplate.template)
-  const babelProgram: Babel.Program = createProgram(glimmerProgram, isComponent, isModule, includeImport, includeContext)
-  const generatedCode = generate(babelProgram).code;
+  const babelProgram: Babel.Program = createProgram(glimmerProgram, isComponent, isModule, includeImport, includeContext, includeHelpersPlaceholder)
+
+  let generatedCode = generate(babelProgram).code;
+  if (includeHelpersPlaceholder) {
+    generatedCode = generatedCode.replace(`"${HELPERS_PLACEHOLDER}";`, preparedTemplate.helpers.join('\n'));
+  }
 
   return print(generatedCode);
 }

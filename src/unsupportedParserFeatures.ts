@@ -27,7 +27,8 @@ const getHelperAndAttributeWithDependentChild = (attributeName: string, helperNa
   helper: string,
   attribute: string
 } => {
-  const helper = `const ${helperName} = (${originalHelperArg}, ${dependentChild}) => ${helperArgCondition} ? \`\$\{${dependentChild}\}${trailingData}\` : '${trailingData}';`;
+  const childFormatted = lowercaseFirstLetter(dependentChild);
+  const helper = `const ${helperName} = (${lowercaseFirstLetter(originalHelperArg)}, ${childFormatted}) => ${helperArgCondition} ? \`\$\{${childFormatted}\}${trailingData}\` : '${trailingData}';`;
   const attribute = `${attributeName}="{{${helperName} ${originalHelperArg} ${dependentChild}}}"`;
 
   return { helper, attribute };
@@ -38,7 +39,7 @@ const getHelperAndAttribute = (attributeName: string, originalHelperName: string
   attribute: string
 } => {
   const shouldNegateArgument = originalHelperName === 'unless';
-  const helperArgCondition = shouldNegateArgument ? `!${originalHelperArg}` : originalHelperArg;
+  const helperArgCondition = shouldNegateArgument ? `!${lowercaseFirstLetter(originalHelperArg)}` : lowercaseFirstLetter(originalHelperArg);
   const helperName = `${attributeName.toLowerCase()}${capitalizeFirstLetter(originalHelperName)}Helper`;
 
   const contextDependentChild = helperChild.match(containsMustacheStatementRegex);
@@ -49,7 +50,7 @@ const getHelperAndAttribute = (attributeName: string, originalHelperName: string
 
   const ifTrueResult = trailingData ? `${helperChild}${trailingData}` : helperChild;
   const ifFalseResult = trailingData ? trailingData : '';
-  const helper = `const ${helperName} = (${originalHelperArg}) => ${helperArgCondition} ? '${ifTrueResult}' : '${ifFalseResult}';`;
+  const helper = `const ${helperName} = (${lowercaseFirstLetter(originalHelperArg)}) => ${helperArgCondition} ? '${ifTrueResult}' : '${ifFalseResult}';`;
   const attribute = `${attributeName}="{{${helperName} ${originalHelperArg}}}"`;
 
   return { helper, attribute };
@@ -109,5 +110,7 @@ const replaceBlockStatementsWithinAttributes = (handlebarsTemplate: string):Prep
 };
 
 const capitalizeFirstLetter = (input: string):string => input ? `${input[0].toUpperCase()}${input.substring(1)}` : input;
+
+const lowercaseFirstLetter = (input: string):string => input ? `${input[0].toLowerCase()}${input.substring(1)}` : input;
 
 export const preProcessUnsupportedParserFeatures = (handlebarsTemplate: string):PreparedTemplate => replaceBlockStatementsWithinAttributes(handlebarsTemplate);

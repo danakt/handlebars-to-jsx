@@ -4,8 +4,9 @@ import { createRootChildren }  from './expressions'
 import { prepareProgramPaths } from './pathsPrepare'
 import { createComponent }     from './componentCreator'
 import { setProgramOptions }   from './programContext'
+import { HELPERS_PLACEHOLDER } from './constants';
 
-const getImportDirectives = (partialTemplates: string[]) => {
+const getImportDirectives = (partialTemplates: string[]):Babel.ImportDeclaration[] => {
   const reactImport = Babel.importDeclaration(
     [Babel.importDefaultSpecifier(Babel.identifier('React'))],
     Babel.stringLiteral('react')
@@ -16,7 +17,7 @@ const getImportDirectives = (partialTemplates: string[]) => {
   ));
 
   return [reactImport, ...partialImports];
-}
+};
 
 /**
  * Creates program statement
@@ -25,22 +26,29 @@ const getImportDirectives = (partialTemplates: string[]) => {
  * @param isModule Should return generated code exported as default
  * @param includeImport Should include react import
  * @param includeContext Should always include template context as property of props
+ * @param includeHelpersPlaceholder Whether to include a placeholder expression (between imports & body) where discovered helper functions will be inserted in post-processing
  */
 export const createProgram = (
   hbsProgram: Glimmer.Template,
   isComponent: boolean,
   isModule: boolean,
   includeImport: boolean,
-  includeContext: boolean
+  includeContext: boolean,
+  includeHelpersPlaceholder: boolean
 ): Babel.Program => {
   setProgramOptions({ isComponent, isModule, includeImport, includeContext });
   const { getEncounteredPartialTemplates } = prepareProgramPaths(hbsProgram, isComponent, includeContext)
 
   const componentBody = createRootChildren(hbsProgram.body)
   const expression = isComponent ? createComponent(componentBody) : componentBody
-  const statement = isModule ? Babel.exportDefaultDeclaration(expression) : Babel.expressionStatement(expression)
+  const statements: Babel.Statement[] = isModule ? [Babel.exportDefaultDeclaration(expression)] : [Babel.expressionStatement(expression)]
+
+  if (includeHelpersPlaceholder) {
+    statements.unshift(Babel.expressionStatement(Babel.stringLiteral(HELPERS_PLACEHOLDER)));
+  }
+
   const partialTemplates = getEncounteredPartialTemplates();
-  const directives: Babel.Statement[] = includeImport ? [...getImportDirectives(partialTemplates), statement] : [statement]
+  const directives: Babel.Statement[] = includeImport ? [...getImportDirectives(partialTemplates), ...statements] : [...statements]
   
   return Babel.program(directives)
-}
+};
