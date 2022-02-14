@@ -30,31 +30,31 @@ describe('preProcessUnsupportedParserFeatures', () => {
 
   describe('when block statement exists in attributes', () => {
     [
-      {
-        template:'<div id={{#if isTrue}}id{{/if}}><div>',
-        expectedTemplate: '<div id="{{idIfHelper isTrue}}"><div>',
-        expectedHelpers: [`const idIfHelper = (isTrue) => isTrue ? 'id' : '';`]
-      },
-      {
-        template: '<div id="{{#if isTrue}}id{{/if}}"><div>',
-        expectedTemplate: '<div id="{{idIfHelper isTrue}}"><div>',
-        expectedHelpers: [`const idIfHelper = (isTrue) => isTrue ? 'id' : '';`]
-      },
-      {
-        template: '<div id = "{{#if isTrue}}id{{/if}}"><div>',
-        expectedTemplate: '<div id="{{idIfHelper isTrue}}"><div>',
-        expectedHelpers: [`const idIfHelper = (isTrue) => isTrue ? 'id' : '';`]
-      },
-      {
-        template: '<div class="{{#if isTrue}}is-true{{/if}} other-class"><div>',
-        expectedTemplate: '<div class="{{classIfHelper isTrue}}"><div>',
-        expectedHelpers: ["const classIfHelper = (isTrue) => isTrue ? 'is-true other-class' : ' other-class';"]
-      },
       // {
-      //   template: '<div id="{{#if isTrue}}{{id}}{{/if}}"><div>',
-      //   expectedTemplate: '<div id="{{idIfHelper isTrue id}}"><div>',
-      //   expectedHelpers: ["const idIfHelper = (isTrue, id) => isTrue ? `${id}` : '';"]
+      //   template:'<div id={{#if isTrue}}id{{/if}}><div>',
+      //   expectedTemplate: '<div id="{{idIfHelper isTrue}}"><div>',
+      //   expectedHelpers: [`const idIfHelper = (isTrue) => isTrue ? 'id' : '';`]
       // },
+      // {
+      //   template: '<div id="{{#if isTrue}}id{{/if}}"><div>',
+      //   expectedTemplate: '<div id="{{idIfHelper isTrue}}"><div>',
+      //   expectedHelpers: [`const idIfHelper = (isTrue) => isTrue ? 'id' : '';`]
+      // },
+      // {
+      //   template: '<div id = "{{#if isTrue}}id{{/if}}"><div>',
+      //   expectedTemplate: '<div id="{{idIfHelper isTrue}}"><div>',
+      //   expectedHelpers: [`const idIfHelper = (isTrue) => isTrue ? 'id' : '';`]
+      // },
+      // {
+      //   template: '<div class="{{#if isTrue}}is-true{{/if}} other-class"><div>',
+      //   expectedTemplate: '<div class="{{classIfHelper isTrue}}"><div>',
+      //   expectedHelpers: ["const classIfHelper = (isTrue) => isTrue ? 'is-true other-class' : ' other-class';"]
+      // },
+      {
+        template: '<div id="{{#if isTrue}}{{id}}{{/if}}"><div>',
+        expectedTemplate: '<div id="{{idIfHelper isTrue id}}"><div>',
+        expectedHelpers: ["const idIfHelper = (isTrue, id) => isTrue ? `${id}` : '';"]
+      },
       // {
       //   template: '<div id="{{#if isTrue}}{{id}}{{/if}}" title={{#unless isTrue}}title{{/if}}><div>',
       //   expectedTemplate: '<div id="{{idIfHelper isTrue id}}" title="{{titleUnlessHelper isTrue}}"><div>',
