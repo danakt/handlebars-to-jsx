@@ -31,27 +31,32 @@ describe('preProcessUnsupportedParserFeatures', () => {
     [
       {
         template:'<div id={{#if isTrue}}id{{/if}}><div>',
-        expectedTemplate: '<div id={{idIfHelper isTrue}}><div>',
+        expectedTemplate: '<div id="{{idIfHelper isTrue}}"><div>',
         expectedHelpers: [`const idIfHelper = (isTrue) => isTrue ? 'id' : '';`]
       },
       // {
       //   template: '<div id="{{#if isTrue}}id{{/if}}"><div>',
-      //   expectedTemplate: '<div id={{idIfHelper isTrue}}><div>',
+      //   expectedTemplate: '<div id="{{idIfHelper isTrue}}"><div>',
+      //   expectedHelpers: [`const idIfHelper = (isTrue) => isTrue ? 'id' : '';`]
+      // },
+      // {
+      //   template: '<div id = "{{#if isTrue}}id{{/if}}"><div>',
+      //   expectedTemplate: '<div id="{{idIfHelper isTrue}}"><div>',
       //   expectedHelpers: [`const idIfHelper = (isTrue) => isTrue ? 'id' : '';`]
       // },
       // {
       //   template: '<div class="{{#if isTrue}}is-true{{/if}} other-class"><div>',
-      //   expectedTemplate: '<div class={{classIfHelper isTrue}}><div>',
+      //   expectedTemplate: '<div class="{{classIfHelper isTrue}}"><div>',
       //   expectedHelpers: ["const classIfHelper = (isTrue) => { const leading = ''; const trailing = ' other-class'; return isTrue ? `${leading}id${trailing}` : `${leading}${trailing};"]
       // },
       // {
       //   template: '<div id="{{#if isTrue}}{{id}}{{/if}}"><div>',
-      //   expectedTemplate: '<div id={{idIfHelper isTrue id}}><div>',
+      //   expectedTemplate: '<div id="{{idIfHelper isTrue id}}"><div>',
       //   expectedHelpers: ["const idIfHelper = (isTrue, id) => isTrue ? `${id}` : '';"]
       // },
       // {
       //   template: '<div id="{{#if isTrue}}{{id}}{{/if}}" title={{#unless isTrue}}title{{/if}}><div>',
-      //   expectedTemplate: '<div id={{idIfHelper isTrue id}} title={{titleUnlessHelper isTrue}}><div>',
+      //   expectedTemplate: '<div id="{{idIfHelper isTrue id}}" title="{{titleUnlessHelper isTrue}}"><div>',
       //   expectedHelpers: [
       //     "const idIfHelper = (isTrue, id) => isTrue ? `${id}` : '';",
       //     "const titleUnlessHelper = (isTrue) => isTrue ? 'title' : '';"
@@ -59,9 +64,9 @@ describe('preProcessUnsupportedParserFeatures', () => {
       // }
     ].forEach(({ template, expectedTemplate, expectedHelpers }) => {
       test('should return template with helper functions', () => {
-        const result = preProcessUnsupportedParserFeatures(template);
-        expect(result).toEqual(expectedTemplate);
-        // expect(result).toEqual(expectedHelpers);
+        const { template: templateResult, helpers: helpersResult } = preProcessUnsupportedParserFeatures(template);
+        expect(templateResult).toEqual(expectedTemplate);
+        expect(helpersResult).toEqual(expectedHelpers);
       });
     });
   });

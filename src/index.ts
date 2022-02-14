@@ -38,8 +38,8 @@ export function compile(
   const includeImport = !!options.includeImport && isModule
   const includeContext = !!options.alwaysIncludeContext
 
-  const compatibleHandlebarsTemplate = preProcessUnsupportedParserFeatures(hbsCode);
-  const glimmerProgram = preprocess(compatibleHandlebarsTemplate)
+  const preparedTemplate = preProcessUnsupportedParserFeatures(hbsCode);
+  const glimmerProgram = preprocess(preparedTemplate.template)
   const babelProgram: Babel.Program = createProgram(glimmerProgram, isComponent, isModule, includeImport, includeContext)
   const generatedCode = generate(babelProgram).code;
 
