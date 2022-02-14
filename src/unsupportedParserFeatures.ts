@@ -20,8 +20,18 @@ interface ReplacementAttributeReference {
 // Locate attributes including: <div id='id' class="class" text=text data = "data" mustache={{name}} ...etc
 const getAllAttributesRegex = /(\w+)\s?=\s?["']?((?:.(?!["']?\s+(?:\S+)=|\s*\/?[>"']))+.)["']?/g;
 const containsMustacheBlockRegex = '{{.*}}.*{{/.*}}';
-const containsMustacheStatementRegex = '{{(.*)}}';
+const containsMustacheStatementRegex = /{{\s?(\w*)\s?}}/;
 const getDataFromBuiltInHelperRegex = '{{#(if|unless) ([^}]*)}}(.*){{/(if|unless)}}([^{]*)$';
+
+const getHelperAndAttributeWithDependentChild = (attributeName: string, helperName: string, helperArgCondition: string, originalHelperArg: string, dependentChild: string, trailingData: string | null): {
+  helper: string,
+  attribute: string
+} => {
+  const helper = `const ${helperName} = (${originalHelperArg}, ${dependentChild}) => ${helperArgCondition} ? \`\$\{${dependentChild}\}${trailingData}\` : '${trailingData}';`;
+  const attribute = `${attributeName}="{{${helperName} ${originalHelperArg} ${dependentChild}}}"`;
+
+  return { helper, attribute };
+};
 
 const getHelperAndAttribute = (attributeName: string, originalHelperName: string, originalHelperArg: string, helperChild: string, trailingData: string | null): {
   helper: string,
@@ -30,6 +40,13 @@ const getHelperAndAttribute = (attributeName: string, originalHelperName: string
   const shouldNegateArgument = originalHelperName === 'unless';
   const helperArgCondition = shouldNegateArgument ? `!${originalHelperArg}` : originalHelperArg;
   const helperName = `${attributeName.toLowerCase()}${capitalizeFirstLetter(originalHelperName)}Helper`;
+
+  const contextDependentChild = helperChild.match(containsMustacheStatementRegex);
+  if (contextDependentChild) {
+    const [_, dependentChild] = contextDependentChild;
+    return getHelperAndAttributeWithDependentChild(attributeName, helperName, helperArgCondition, originalHelperArg, dependentChild, trailingData);
+  }
+
   const ifTrueResult = trailingData ? `${helperChild}${trailingData}` : helperChild;
   const ifFalseResult = trailingData ? trailingData : '';
   const helper = `const ${helperName} = (${originalHelperArg}) => ${helperArgCondition} ? '${ifTrueResult}' : '${ifFalseResult}';`;
@@ -45,8 +62,8 @@ const rewriteAttributeAsHelper = ({ attributeName, value, startIndex: originalSt
     }
 
     const [_, originalHelperName, originalHelperArg, helperChild, __, trailingData] = attributeValueData;
-    if (helperChild.match(containsMustacheStatementRegex)) { // TODO: support helperChild being a block statement (use recursion?) or mustache statement
-        throw `Unsupported block statement child found in attribute '${attributeName}': ${helperChild}`;
+    if (helperChild.match(containsMustacheBlockRegex)) { // TODO: support helperChild being a block statement (use recursion?)
+        throw `Unsupported block statement as child found in attribute '${attributeName}': ${helperChild}`;
     }
 
     const { helper, attribute } = getHelperAndAttribute(attributeName, originalHelperName, originalHelperArg, helperChild, trailingData);
