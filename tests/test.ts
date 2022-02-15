@@ -261,12 +261,11 @@ describe('include react import', () => {
 describe('block within attribute value', () => {
   test('unless helper within class attribute', () => {
     const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', true);
-    const jsxLines = jsx.split('\n').filter((line) => line);
     const expectedLines = [
       'const classUnlessHelper = canEdit => !canEdit ? "is-disabled" : "";',
       'props => <div className={classUnlessHelper(props.CanEdit)}></div>;'
     ];
-    expect(jsxLines).toEqual(expectedLines);
+    expect(jsx).toEqual(expectedLines.join(' '));
   });
 });
 

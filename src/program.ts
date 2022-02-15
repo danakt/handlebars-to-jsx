@@ -44,7 +44,5 @@ export const createProgram = (
   const partialTemplates = getEncounteredPartialTemplates();
   const directives: Babel.Statement[] = includeImport ? [...getImportDirectives(partialTemplates), ...helpers, statement] : [...helpers, statement]
 
-  const aaa = Babel.program(helpers);
-  
   return Babel.program(directives)
 };
