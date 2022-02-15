@@ -26,50 +26,34 @@ const containsMustacheStatementRegex = /{{\s?(\w*)\s?}}/;
 const getDataFromBuiltInHelperRegex = '{{#(if|unless) ([^}]*)}}(.*){{/(if|unless)}}([^{]*)$';
 
 // TODO: add support for leadingData as well...
-const getHelperAndAttributeWithDependentChild = (attributeName: string, helperName: string, shouldNegateArgument: boolean, originalHelperArg: string, dependentChild: string, trailingData: string | null): {
-  helper: Babel.VariableDeclaration,
-  attribute: string
-} => {
-  const childIdentifier = Babel.identifier(lowercaseFirstLetter(dependentChild));
-  const variableName = Babel.identifier(helperName);
-  const variableFunctionArgumentFromOriginal = Babel.identifier(lowercaseFirstLetter(originalHelperArg));
-  const variableFunctionArguments = [variableFunctionArgumentFromOriginal, childIdentifier];
-  const conditionalCheck = shouldNegateArgument ? Babel.unaryExpression('!', variableFunctionArgumentFromOriginal) : variableFunctionArgumentFromOriginal;
-  const ifTrueResult = trailingData ? Babel.binaryExpression('+', childIdentifier, Babel.stringLiteral(trailingData as string)) : childIdentifier; // TODO: figure out how to get TemplateLiteral working
-  const ifFalseResult = Babel.stringLiteral(trailingData ? trailingData : '');
-  const variableFunctionBody = Babel.conditionalExpression(conditionalCheck, ifTrueResult, ifFalseResult);
-  const variableFunction = Babel.arrowFunctionExpression(variableFunctionArguments, variableFunctionBody);
-  const variableDeclarator = Babel.variableDeclarator(variableName, variableFunction);
-  const helper = Babel.variableDeclaration('const', [variableDeclarator]);
-  const attribute = `${attributeName}="{{${helperName} ${originalHelperArg} ${dependentChild}}}"`;
+const getIfTrueResultForLiteralChild = (helperChild: string, trailingData: string | null) => {
+  return Babel.stringLiteral(trailingData ? `${helperChild}${trailingData}` : helperChild);
+};
 
-  return { helper, attribute };
+// TODO: add support for leadingData as well...
+const getIfTrueResultForDependentChild = (helperChild: Babel.Identifier, trailingData: string | null) => {
+  return trailingData ? Babel.binaryExpression('+', helperChild, Babel.stringLiteral(trailingData as string)) : helperChild;
 };
 
 const getHelperAndAttribute = (attributeName: string, originalHelperName: string, originalHelperArg: string, helperChild: string, trailingData: string | null): {
   helper: Babel.VariableDeclaration,
   attribute: string
 } => {
+  const contextDependentChild = helperChild.match(containsMustacheStatementRegex);
+  const childIdentifier = contextDependentChild ? Babel.identifier(lowercaseFirstLetter(contextDependentChild[1])) : null;
   const helperName = `${attributeName.toLowerCase()}${capitalizeFirstLetter(originalHelperName)}Helper`;
   const shouldNegateArgument = originalHelperName === 'unless';
-
-  const contextDependentChild = helperChild.match(containsMustacheStatementRegex);
-  if (contextDependentChild) {
-    const [_, dependentChild] = contextDependentChild;
-    return getHelperAndAttributeWithDependentChild(attributeName, helperName, shouldNegateArgument, originalHelperArg, dependentChild, trailingData);
-  }
-
   const variableName = Babel.identifier(helperName);
   const variableFunctionArgumentFromOriginal = Babel.identifier(lowercaseFirstLetter(originalHelperArg));
-  const variableFunctionArguments = [variableFunctionArgumentFromOriginal];
+  const variableFunctionArguments = childIdentifier ? [variableFunctionArgumentFromOriginal, childIdentifier] : [variableFunctionArgumentFromOriginal];
   const conditionalCheck = shouldNegateArgument ? Babel.unaryExpression('!', variableFunctionArgumentFromOriginal) : variableFunctionArgumentFromOriginal;
-  const ifTrueResult = Babel.stringLiteral(trailingData ? `${helperChild}${trailingData}` : helperChild);
+  const ifTrueResult = childIdentifier ? getIfTrueResultForDependentChild(childIdentifier, trailingData) : getIfTrueResultForLiteralChild(helperChild, trailingData);
   const ifFalseResult = Babel.stringLiteral(trailingData ? trailingData : '');
   const variableFunctionBody = Babel.conditionalExpression(conditionalCheck, ifTrueResult, ifFalseResult);
   const variableFunction = Babel.arrowFunctionExpression(variableFunctionArguments, variableFunctionBody);
   const variableDeclarator = Babel.variableDeclarator(variableName, variableFunction);
   const helper = Babel.variableDeclaration('const', [variableDeclarator]);
-  const attribute = `${attributeName}="{{${helperName} ${originalHelperArg}}}"`;
+  const attribute = childIdentifier ? `${attributeName}="{{${helperName} ${originalHelperArg} ${childIdentifier.name}}}"` : `${attributeName}="{{${helperName} ${originalHelperArg}}}"`;
 
   return { helper, attribute };
 };
