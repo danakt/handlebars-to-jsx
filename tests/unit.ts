@@ -53,6 +53,11 @@ describe('preProcessUnsupportedParserFeatures', () => {
         expectedHelpers: ['const classIfHelper = isTrue => isTrue ? "is-true other-class" : " other-class";']
       },
       {
+        template: '<div class="first-class {{#if isTrue}}is-true{{/if}} other-class"><div>',
+        expectedTemplate: '<div class="{{classIfHelper isTrue}}"><div>',
+        expectedHelpers: ['const classIfHelper = isTrue => isTrue ? "first-class is-true other-class" : "first-class  other-class";']
+      },
+      {
         template: '<div id="{{#if isTrue}}{{id}}{{/if}}"><div>',
         expectedTemplate: '<div id="{{idIfHelper isTrue id}}"><div>',
         expectedHelpers: ['const idIfHelper = (isTrue, id) => isTrue ? id : "";']
@@ -61,6 +66,11 @@ describe('preProcessUnsupportedParserFeatures', () => {
         template: '<div class="{{#unless isTrue}}{{classText}}{{/unless}} other-class"><div>',
         expectedTemplate: '<div class="{{classUnlessHelper isTrue classText}}"><div>',
         expectedHelpers: ['const classUnlessHelper = (isTrue, classText) => !isTrue ? classText + " other-class" : " other-class";']
+      },
+      {
+        template: '<div class="first-class {{#unless isTrue}}{{classText}}{{/unless}} other-class"><div>',
+        expectedTemplate: '<div class="{{classUnlessHelper isTrue classText}}"><div>',
+        expectedHelpers: ['const classUnlessHelper = (isTrue, classText) => !isTrue ? "first-class " + classText + " other-class" : "first-class  other-class";']
       },
       {
         template: '<div id="{{#if isTrue}}{{id}}{{/if}}" title={{#unless isTrue}}title{{/if}}><div>',

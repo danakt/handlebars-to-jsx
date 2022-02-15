@@ -23,19 +23,21 @@ interface ReplacementAttributeReference {
 const getAllAttributesRegex = /(\w+)\s?=\s?["']?((?:.(?!["']?\s+(?:\S+)=|\s*\/?[>"']))+.)["']?/g;
 const containsMustacheBlockRegex = '{{.*}}.*{{/.*}}';
 const containsMustacheStatementRegex = /{{\s?(\w*)\s?}}/;
-const getDataFromBuiltInHelperRegex = '{{#(if|unless) ([^}]*)}}(.*){{/(if|unless)}}([^{]*)$';
+const getDataFromBuiltInHelperRegex = '([^}]*){{#(if|unless) ([^}]*)}}(.*){{/(if|unless)}}([^{]*)$';
 
-// TODO: add support for leadingData as well...
-const getIfTrueResultForLiteralChild = (helperChild: string, trailingData: string | null) => {
-  return Babel.stringLiteral(trailingData ? `${helperChild}${trailingData}` : helperChild);
+const getIfTrueResultForLiteralChild = (helperChild: string, leadingData: string, trailingData: string):Babel.Expression => Babel.stringLiteral(`${leadingData}${helperChild}${trailingData}`);
+
+const getIfTrueResultForDependentChild = (helperChild: Babel.Identifier, leadingData: string | null, trailingData: string | null):Babel.Expression => {
+  if (!leadingData && !trailingData) {
+    return helperChild;
+  }
+
+  const leadingExpression = leadingData ? Babel.binaryExpression('+', Babel.stringLiteral(leadingData as string), helperChild) : helperChild;
+
+  return trailingData ? Babel.binaryExpression('+', leadingExpression, Babel.stringLiteral(trailingData as string)) : leadingExpression;
 };
 
-// TODO: add support for leadingData as well...
-const getIfTrueResultForDependentChild = (helperChild: Babel.Identifier, trailingData: string | null) => {
-  return trailingData ? Babel.binaryExpression('+', helperChild, Babel.stringLiteral(trailingData as string)) : helperChild;
-};
-
-const getHelperAndAttribute = (attributeName: string, originalHelperName: string, originalHelperArg: string, helperChild: string, trailingData: string | null): {
+const getHelperAndAttribute = (attributeName: string, originalHelperName: string, originalHelperArg: string, helperChild: string, leadingData: string | null, trailingData: string | null): {
   helper: Babel.VariableDeclaration,
   attribute: string
 } => {
@@ -47,8 +49,8 @@ const getHelperAndAttribute = (attributeName: string, originalHelperName: string
   const variableFunctionArgumentFromOriginal = Babel.identifier(lowercaseFirstLetter(originalHelperArg));
   const variableFunctionArguments = childIdentifier ? [variableFunctionArgumentFromOriginal, childIdentifier] : [variableFunctionArgumentFromOriginal];
   const conditionalCheck = shouldNegateArgument ? Babel.unaryExpression('!', variableFunctionArgumentFromOriginal) : variableFunctionArgumentFromOriginal;
-  const ifTrueResult = childIdentifier ? getIfTrueResultForDependentChild(childIdentifier, trailingData) : getIfTrueResultForLiteralChild(helperChild, trailingData);
-  const ifFalseResult = Babel.stringLiteral(trailingData ? trailingData : '');
+  const ifTrueResult = childIdentifier ? getIfTrueResultForDependentChild(childIdentifier, leadingData, trailingData) : getIfTrueResultForLiteralChild(helperChild, leadingData ?? '', trailingData ?? '');
+  const ifFalseResult = Babel.stringLiteral(`${leadingData ?? ''}${trailingData ?? ''}`);
   const variableFunctionBody = Babel.conditionalExpression(conditionalCheck, ifTrueResult, ifFalseResult);
   const variableFunction = Babel.arrowFunctionExpression(variableFunctionArguments, variableFunctionBody);
   const variableDeclarator = Babel.variableDeclarator(variableName, variableFunction);
@@ -64,12 +66,12 @@ const rewriteAttributeAsHelper = ({ attributeName, value, startIndex: originalSt
       throw `Unsupported block statement found in attribute '${attributeName}'': ${value}`;
     }
 
-    const [_, originalHelperName, originalHelperArg, helperChild, __, trailingData] = attributeValueData;
+    const [_, leadingData, originalHelperName, originalHelperArg, helperChild, __, trailingData] = attributeValueData;
     if (helperChild.match(containsMustacheBlockRegex)) { // TODO: support helperChild being a block statement (use recursion?)
         throw `Unsupported block statement as child found in attribute '${attributeName}': ${helperChild}`;
     }
 
-    const { helper, attribute } = getHelperAndAttribute(attributeName, originalHelperName, originalHelperArg, helperChild, trailingData);
+    const { helper, attribute } = getHelperAndAttribute(attributeName, originalHelperName, originalHelperArg, helperChild, leadingData, trailingData);
     
     return { helper, attribute, originalStartIndex, originalLength };
 };
