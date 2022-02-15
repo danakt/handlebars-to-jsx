@@ -4,7 +4,6 @@ import { createRootChildren }  from './expressions'
 import { prepareProgramPaths } from './pathsPrepare'
 import { createComponent }     from './componentCreator'
 import { setProgramOptions }   from './programContext'
-import { HELPERS_PLACEHOLDER } from './constants';
 
 const getImportDirectives = (partialTemplates: string[]):Babel.ImportDeclaration[] => {
   const reactImport = Babel.importDeclaration(
@@ -34,21 +33,18 @@ export const createProgram = (
   isModule: boolean,
   includeImport: boolean,
   includeContext: boolean,
-  includeHelpersPlaceholder: boolean
+  helpers: Babel.VariableDeclaration[]
 ): Babel.Program => {
   setProgramOptions({ isComponent, isModule, includeImport, includeContext });
   const { getEncounteredPartialTemplates } = prepareProgramPaths(hbsProgram, isComponent, includeContext)
 
   const componentBody = createRootChildren(hbsProgram.body)
   const expression = isComponent ? createComponent(componentBody) : componentBody
-  const statements: Babel.Statement[] = isModule ? [Babel.exportDefaultDeclaration(expression)] : [Babel.expressionStatement(expression)]
-
-  if (includeHelpersPlaceholder) {
-    statements.unshift(Babel.expressionStatement(Babel.stringLiteral(HELPERS_PLACEHOLDER)));
-  }
-
+  const statement: Babel.Statement = isModule ? Babel.exportDefaultDeclaration(expression) : Babel.expressionStatement(expression)
   const partialTemplates = getEncounteredPartialTemplates();
-  const directives: Babel.Statement[] = includeImport ? [...getImportDirectives(partialTemplates), ...statements] : [...statements]
+  const directives: Babel.Statement[] = includeImport ? [...getImportDirectives(partialTemplates), ...helpers, statement] : [...helpers, statement]
+
+  const aaa = Babel.program(helpers);
   
   return Babel.program(directives)
 };
