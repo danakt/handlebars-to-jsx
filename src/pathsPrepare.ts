@@ -86,7 +86,10 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template) => {
       if (isMustacheHelperStatement(node)) {
         const statementPath = node.path as Glimmer.PathExpression;
         const functionName = statementPath.parts[statementPath.parts.length - 1];
-        helperFunctions.push(functionName);
+
+        if (!partialTemplates.includes(functionName)) {
+          helperFunctions.push(functionName);
+        }
       }
     },
 

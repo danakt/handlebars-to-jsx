@@ -289,7 +289,15 @@ describe('transformation of helper invocations', () => {
   });
 });
 
-describe('block within attribute value', () => {
+describe('custom helper within attribute value', () => {
+  test('custom helper within class attribute', () => {
+    const jsx = compile('<div class="first-class {{someHelper hasData data}} other-class"></div>', true);
+    const expectedJsx = 'props => <div className={"first-class " + someHelper(props.hasData, props.data) + " other-class"}></div>;';
+    expect(jsx).toEqual(expectedJsx);
+  });
+});
+
+describe('block statement within attribute value', () => {
   test('unless helper within class attribute', () => {
     const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', true);
     const expectedLines = [
@@ -297,6 +305,35 @@ describe('block within attribute value', () => {
       'props => <div className={classUnlessHelper(props.CanEdit)}></div>;'
     ];
     expect(jsx).toEqual(expectedLines.join(' '));
+  });
+
+  test('if helper within class attribute', () => {
+    const jsx = compile('<div class="{{#if CanEdit}}is-disabled{{/if}} other-class"></div>', true);
+    const expectedLines = [
+      'const classIfHelper = canEdit => canEdit ? "is-disabled other-class" : " other-class";',
+      'props => <div className={classIfHelper(props.CanEdit)}></div>;'
+    ];
+    expect(jsx).toEqual(expectedLines.join(' '));
+  });
+
+  test('if helper within class attribute and custom helper in body', () => {
+    const jsx = compile('<div class="{{#if canEdit}}is-disabled{{/if}}">{{someHelper hasData data}}</div>', true);
+    const expectedLines = [
+      'const classIfHelper = canEdit => canEdit ? "is-disabled" : "";',
+      'props => <div className={classIfHelper(props.canEdit)}>{someHelper(props.hasData, props.data)}</div>;'
+    ];
+    expect(jsx).toEqual(expectedLines.join(' '));
+  });
+
+  test('if helper within class attribute and custom helper in body, includeImport true', () => {
+    const jsx = compile('<div class="{{#if canEdit}}is-disabled{{/if}}">{{someHelper hasData data}}</div>', { isComponent: true, isModule: true, includeImport: true });
+    const jsxLines = jsx.split('\n');
+    const expectedLines = [
+      'import React from "react";',
+      'import someHelper from "./someHelper";',
+      'const classIfHelper = canEdit => canEdit ? "is-disabled" : ""; export default (props => <div className={classIfHelper(props.canEdit)}>{someHelper(props.hasData, props.data)}</div>);'
+    ];
+    expect(jsxLines).toEqual(expectedLines);
   });
 });
 
