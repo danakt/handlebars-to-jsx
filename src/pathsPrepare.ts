@@ -1,5 +1,7 @@
-import { AST as Glimmer, traverse } from 'glimmer-engine/dist/@glimmer/syntax'
+import { AST as Glimmer, ASTv1, traverse } from 'glimmer-engine/dist/@glimmer/syntax'
 import { DEFAULT_EACH_LOOP_NAMESPACE, DEFAULT_GLOBAL_NAMESPACE, DEFAULT_PARTIAL_NAMESPACE }   from './constants'
+import { getProgramOptions } from './programContext'
+import { isMustacheHelperStatement } from './types';
 
 /**
  * Checks is each statement
@@ -37,10 +39,11 @@ const createNamespaceStack = () => {
 /**
  * Prepares paths Glimmer AST for compatible with JS AST.
  */
-export const prepareProgramPaths = (programTemplate: Glimmer.Template, isComponent: boolean, includeContext: boolean) => {
+export const prepareProgramPaths = (programTemplate: Glimmer.Template) => {
+  const { isComponent, includeContext } = getProgramOptions(); 
   const namespaces = createNamespaceStack()
-  const encounteredPartialTemplates:string[] = []; // TODO: update to include references to their props
-  const getEncounteredPartialTemplates = () => encounteredPartialTemplates;
+  const partialTemplates:string[] = []; // TODO: update to include references to their props
+  const helperFunctions:string[] = []; // TODO: update to include references to their props
 
   // Global component namespace
   if (isComponent) {
@@ -68,8 +71,8 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template, isCompone
         if (node.type === 'PartialStatement') {
           const jsxElementName = (node.name as Glimmer.PathExpression).original;
 
-          if (!encounteredPartialTemplates.includes(jsxElementName))
-            encounteredPartialTemplates.push(jsxElementName);
+          if (!partialTemplates.includes(jsxElementName))
+            partialTemplates.push(jsxElementName);
         }
       },
       exit(node: Glimmer.Node) {
@@ -77,6 +80,13 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template, isCompone
         if (namespaces.length > 0 && node === namespaces.head().node) {
           namespaces.pop()
         }
+      }
+    },
+    MustacheStatement(node: Glimmer.MustacheStatement) {
+      if (isMustacheHelperStatement(node)) {
+        const statementPath = node.path as Glimmer.PathExpression;
+        const functionName = statementPath.parts[statementPath.parts.length - 1];
+        helperFunctions.push(functionName);
       }
     },
 
@@ -87,7 +97,7 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template, isCompone
         node.parts.unshift(namespaces.head().name)
       }
     }
-  })
+  });
 
-  return { getEncounteredPartialTemplates };
+  return { partialTemplates, helperFunctions };
 }

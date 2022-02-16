@@ -264,23 +264,29 @@ describe('transformation of helper invocations', () => {
       const expectedResult = 'props => <div>{helperFunction(props.data)}</div>;';
       expect(jsx).toEqual(expectedResult);
   });
-  
-  // test('should include helper invocation from attribute', () => {
-  //   const jsx = compile('<div title={{helperFunction data}}></div>', true);
-  //     const expectedResult = 'props => <div title={helperFunction(props.data)}></div>;';
-  //     expect(jsx).toEqual(expectedResult);
-  // });
 
-  // test('should include import of helper function when includeImport is true', () => {
-  //   const jsx = compile('<div>{{helperFunction data}}</div>', { isComponent: true, isModule: true, includeImport: true });
-  //   const jsxLines = jsx.split('\n');
-  //   const expectedLines = [
-  //     'import React from "react";',
-  //     'import helperFunction from "./helperFunction";',
-  //     'export default (props => <div>{helperFunction(props.data)}</div>);'
-  //   ];
-  //   expect(jsxLines).toEqual(expectedLines);
-  // });
+  test('should include helper invocation from within each block', () => {
+    const jsx = compile('<div>{{#each list}}{{helperFunction data}}{{/each}}</div>', true);
+      const expectedResult = 'props => <div>{props.list.map((item, i) => <React.Fragment key={i}>{helperFunction(item.data)}</React.Fragment>)}</div>;';
+      expect(jsx).toEqual(expectedResult);
+  });
+  
+  test('should include helper invocation from attribute', () => {
+    const jsx = compile('<div title={{helperFunction data}}></div>', true);
+      const expectedResult = 'props => <div title={helperFunction(props.data)}></div>;';
+      expect(jsx).toEqual(expectedResult);
+  });
+
+  test('should include import of helper function when includeImport is true', () => {
+    const jsx = compile('<div>{{helperFunction data}}</div>', { isComponent: true, isModule: true, includeImport: true });
+    const jsxLines = jsx.split('\n');
+    const expectedLines = [
+      'import React from "react";',
+      'import helperFunction from "./helperFunction";',
+      'export default (props => <div>{helperFunction(props.data)}</div>);'
+    ];
+    expect(jsxLines).toEqual(expectedLines);
+  });
 });
 
 // TODO: improve support for helpers (NOTE: block statements within attributes are converted to helper syntax with the associated helper function)

@@ -5,7 +5,10 @@ import { prepareProgramPaths } from './pathsPrepare'
 import { createComponent }     from './componentCreator'
 import { setProgramOptions }   from './programContext'
 
-const getImportDirectives = (partialTemplates: string[]):Babel.ImportDeclaration[] => {
+const getImportDirectives = ({ partialTemplates, helperFunctions }: {
+  partialTemplates: string[],
+  helperFunctions: string[]
+}):Babel.ImportDeclaration[] => {
   const reactImport = Babel.importDeclaration(
     [Babel.importDefaultSpecifier(Babel.identifier('React'))],
     Babel.stringLiteral('react')
@@ -14,8 +17,12 @@ const getImportDirectives = (partialTemplates: string[]):Babel.ImportDeclaration
     [Babel.importDefaultSpecifier(Babel.identifier(partialName))],
     Babel.stringLiteral(`./${partialName}`) // TODO: add support for specifying partial directory
   ));
+  const helperImports = helperFunctions.map((helperName) => Babel.importDeclaration(
+    [Babel.importDefaultSpecifier(Babel.identifier(helperName))],
+    Babel.stringLiteral(`./${helperName}`) // TODO: add support for specifying helper directory
+  ));
 
-  return [reactImport, ...partialImports];
+  return [reactImport, ...helperImports, ...partialImports];
 };
 
 /**
@@ -25,7 +32,7 @@ const getImportDirectives = (partialTemplates: string[]):Babel.ImportDeclaration
  * @param isModule Should return generated code exported as default
  * @param includeImport Should include react import
  * @param includeContext Should always include template context as property of props
- * @param includeHelpersPlaceholder Whether to include a placeholder expression (between imports & body) where discovered helper functions will be inserted in post-processing
+ * @param helpers Helper function declarations, generated from pre-processing block mustache statements within node attributes
  */
 export const createProgram = (
   hbsProgram: Glimmer.Template,
@@ -36,13 +43,12 @@ export const createProgram = (
   helpers: Babel.VariableDeclaration[]
 ): Babel.Program => {
   setProgramOptions({ isComponent, isModule, includeImport, includeContext });
-  const { getEncounteredPartialTemplates } = prepareProgramPaths(hbsProgram, isComponent, includeContext)
+  const externalFunctions = prepareProgramPaths(hbsProgram);
 
-  const componentBody = createRootChildren(hbsProgram.body)
-  const expression = isComponent ? createComponent(componentBody) : componentBody
-  const statement: Babel.Statement = isModule ? Babel.exportDefaultDeclaration(expression) : Babel.expressionStatement(expression)
-  const partialTemplates = getEncounteredPartialTemplates();
-  const directives: Babel.Statement[] = includeImport ? [...getImportDirectives(partialTemplates), ...helpers, statement] : [...helpers, statement]
+  const componentBody = createRootChildren(hbsProgram.body);
+  const expression = isComponent ? createComponent(componentBody) : componentBody;
+  const statement: Babel.Statement = isModule ? Babel.exportDefaultDeclaration(expression) : Babel.expressionStatement(expression);
+  const directives: Babel.Statement[] = includeImport ? [...getImportDirectives(externalFunctions), ...helpers, statement] : [...helpers, statement];
 
-  return Babel.program(directives)
+  return Babel.program(directives);
 };

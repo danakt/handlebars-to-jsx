@@ -5,7 +5,9 @@ interface ProgramOptions {
     includeContext: boolean
   };
 
-const context = {
+const context:{
+    options: ProgramOptions
+} = {
     options: {
         isComponent: false,
         isModule: false,
@@ -18,4 +20,4 @@ export const setProgramOptions = (options: ProgramOptions) => {
     context.options = options;
 }
 
-export const getProgramOptions = () => context.options;
+export const getProgramOptions = ():ProgramOptions => context.options;

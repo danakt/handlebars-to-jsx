@@ -4,6 +4,7 @@ import { createFragment, convertElement, convertPartialStatement } from './eleme
 import { resolveBlockStatement }          from './blockStatements'
 import { createComment }                  from './comments'
 import { DEFAULT_GLOBAL_NAMESPACE, DEFAULT_PARTIAL_NAMESPACE } from './constants'
+import { MustacheHelperStatement, isMustacheHelperStatement } from './types';
 
 /**
  * Converts the Handlebars expression to NON-JSX JS-compatible expression.
@@ -21,9 +22,8 @@ export const resolveStatement = (statement: Glimmer.Statement) => {
     }
 
     case 'MustacheStatement': {
-      // NOTE: without additional context, a helper function with 1 param can't be distinguished from a regular mustache statement
-      if (statement.params.length > 0) {
-        return resolveHelperFunctionStatement(statement);
+      if (isMustacheHelperStatement(statement)) {
+        return resolveHelperFunctionStatement((statement as unknown) as MustacheHelperStatement);
       }
       
       return resolveExpression(statement.path);
@@ -56,7 +56,7 @@ export const resolveStatement = (statement: Glimmer.Statement) => {
 /**
  * Resolves partial block type
  */
-const resolveHelperFunctionStatement = (statement: Glimmer.MustacheStatement):Babel.CallExpression => {
+const resolveHelperFunctionStatement = (statement: MustacheHelperStatement):Babel.CallExpression => {
   const statementPath = statement.path as Glimmer.PathExpression;
   const functionIdentifier = Babel.identifier(statementPath.parts[statementPath.parts.length - 1]);
   const functionArguments = statement.params.map((initialParam) => resolveExpression(initialParam));

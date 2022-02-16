@@ -1,11 +1,11 @@
-import { AST as Glimmer }                                  from 'glimmer-engine/dist/@glimmer/syntax'
-import * as Babel                                          from '@babel/types'
-import * as isSelfClosing                                  from 'is-self-closing'
-import * as convertHTMLAttribute                           from 'react-attr-converter'
-import { createConcat, resolveExpression, createChildren } from './expressions'
-import { createStyleObject }                               from './styles'
-import { getProgramOptions }                               from './programContext'
-import { DEFAULT_PARTIAL_NAMESPACE } from './constants'
+import { AST as Glimmer }                                                    from 'glimmer-engine/dist/@glimmer/syntax'
+import * as Babel                                                            from '@babel/types'
+import * as isSelfClosing                                                    from 'is-self-closing'
+import * as convertHTMLAttribute                                             from 'react-attr-converter'
+import { createConcat, resolveExpression, createChildren, resolveStatement } from './expressions'
+import { createStyleObject }                                                 from './styles'
+import { getProgramOptions }                                                 from './programContext'
+import { DEFAULT_PARTIAL_NAMESPACE }                                         from './constants'
 
 /**
  * Creates JSX fragment
@@ -50,7 +50,7 @@ export const createAttribute = (attrNode: Glimmer.AttrNode): Babel.JSXAttribute 
     }
 
     case 'MustacheStatement': {
-      return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(resolveExpression(value.path)))
+      return Babel.jsxAttribute(name, Babel.jsxExpressionContainer(resolveStatement(value)))
     }
 
     case 'ConcatStatement': {
