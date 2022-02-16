@@ -289,17 +289,16 @@ describe('transformation of helper invocations', () => {
   });
 });
 
-// TODO: improve support for helpers (NOTE: block statements within attributes are converted to helper syntax with the associated helper function)
-// describe('block within attribute value', () => {
-//   test('unless helper within class attribute', () => {
-//     const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', true);
-//     const expectedLines = [
-//       'const classUnlessHelper = canEdit => !canEdit ? "is-disabled" : "";',
-//       'props => <div className={classUnlessHelper(props.CanEdit)}></div>;'
-//     ];
-//     expect(jsx).toEqual(expectedLines.join(' '));
-//   });
-// });
+describe('block within attribute value', () => {
+  test('unless helper within class attribute', () => {
+    const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', true);
+    const expectedLines = [
+      'const classUnlessHelper = canEdit => !canEdit ? "is-disabled" : "";',
+      'props => <div className={classUnlessHelper(props.CanEdit)}></div>;'
+    ];
+    expect(jsx).toEqual(expectedLines.join(' '));
+  });
+});
 
 describe('context references within partial template', () => {
   [true, false].forEach((alwaysIncludeContext) => {
