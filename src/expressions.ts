@@ -21,7 +21,12 @@ export const resolveStatement = (statement: Glimmer.Statement) => {
     }
 
     case 'MustacheStatement': {
-      return resolveExpression(statement.path)
+      // NOTE: without additional context, a helper function with 1 param can't be distinguished from a regular mustache statement
+      if (statement.params.length > 0) {
+        return resolveHelperFunctionStatement(statement);
+      }
+      
+      return resolveExpression(statement.path);
     }
 
     case 'BlockStatement': {
@@ -51,9 +56,19 @@ export const resolveStatement = (statement: Glimmer.Statement) => {
 /**
  * Resolves partial block type
  */
- export const resolvePartialBlockStatement = (resolvePartialBlockStatement: Glimmer.PartialBlockStatement) => {
-  const aaa = (resolvePartialBlockStatement.name as Glimmer.PathExpression).original;
-  console.log(aaa);
+const resolveHelperFunctionStatement = (statement: Glimmer.MustacheStatement):Babel.CallExpression => {
+  const statementPath = statement.path as Glimmer.PathExpression;
+  const functionIdentifier = Babel.identifier(statementPath.parts[statementPath.parts.length - 1]);
+  const functionArguments = statement.params.map((initialParam) => resolveExpression(initialParam));
+
+  return Babel.callExpression(functionIdentifier, functionArguments);
+};
+
+/**
+ * Resolves partial block type
+ */
+ const resolvePartialBlockStatement = (resolvePartialBlockStatement: Glimmer.PartialBlockStatement) => {
+  throw new Error('Partial block statements not supported');
 }
 
 /**

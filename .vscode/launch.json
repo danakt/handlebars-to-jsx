@@ -7,7 +7,7 @@
       "request": "launch",
       "env": { "CI": "true" },
       "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "args": ["--runInBand", "--no-cache", "-t unless helper within class attribute$"],
+      "args": ["--runInBand", "--no-cache", "-t should include helper invocation from node child$"],
       "cwd": "${workspaceRoot}",
       "outFiles":[
           "${workspaceFolder}/dist/**/*.js",
