@@ -261,20 +261,20 @@ describe('include react import', () => {
 describe('transformation of helper invocations', () => {
   test('should include helper invocation from node child', () => {
     const jsx = compile('<div>{{helperFunction data}}</div>', true);
-      const expectedResult = 'props => <div>{helperFunction(props.data)}</div>;';
-      expect(jsx).toEqual(expectedResult);
+    const expectedResult = 'props => <div>{helperFunction(props.data)}</div>;';
+    expect(jsx).toEqual(expectedResult);
   });
 
   test('should include helper invocation from within each block', () => {
     const jsx = compile('<div>{{#each list}}{{helperFunction data}}{{/each}}</div>', true);
-      const expectedResult = 'props => <div>{props.list.map((item, i) => <React.Fragment key={i}>{helperFunction(item.data)}</React.Fragment>)}</div>;';
-      expect(jsx).toEqual(expectedResult);
+    const expectedResult = 'props => <div>{props.list.map((item, i) => <React.Fragment key={i}>{helperFunction(item.data)}</React.Fragment>)}</div>;';
+    expect(jsx).toEqual(expectedResult);
   });
   
   test('should include helper invocation from attribute', () => {
     const jsx = compile('<div title={{helperFunction data}}></div>', true);
-      const expectedResult = 'props => <div title={helperFunction(props.data)}></div>;';
-      expect(jsx).toEqual(expectedResult);
+    const expectedResult = 'props => <div title={helperFunction(props.data)}></div>;';
+    expect(jsx).toEqual(expectedResult);
   });
 
   test('should include import of helper function when includeImport is true', () => {
@@ -287,6 +287,21 @@ describe('transformation of helper invocations', () => {
     ];
     expect(jsxLines).toEqual(expectedLines);
   });
+
+  // NOTE: a helper function generating attributes in this manner MUST return an object with key/value pairs being the attribute names & values
+  // TODO: add option to toggle the custom helper the custom helper being inline vs external (default)
+  describe('helper functions generating attributes', () => {
+    test('should include custom helper to convert original helper result into a compatible form', () => {
+      const jsx = compile('<div {{getAttributesString innerContext}}></div>', { isComponent: true, isModule: true, includeImport: true });
+      const expectedLines = [
+        'import React from "react";',
+        'import generateAttributes from "./generateAttributes";',
+        'import getAttributesString from "./getAttributesString";',
+        'props => <div {...generateAttributes(getAttributesString(props.innerContext))}></div>;'
+      ];
+      expect(jsx).toEqual(expectedLines.join(' '));
+    });
+  });
 });
 
 describe('custom helper within attribute value', () => {
@@ -297,7 +312,7 @@ describe('custom helper within attribute value', () => {
   });
 });
 
-describe('blocks statement in opening tag', () => {
+describe('block statement in opening tag', () => {
   describe('within attribute value', () => {
     test('unless helper within class attribute', () => {
       const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', true);
@@ -338,16 +353,16 @@ describe('blocks statement in opening tag', () => {
     });
   });
 
-  // describe('as conditional attribute', () => {
-  //   test('around single attribute', () => {
-  //     const jsx = compile('<div{{#if hasTooltip}} title="{{tooltip}}"{{/if}}></div>', true);
-  //     const expectedLines = [
-  //       'const titleIfHelper = (hasTooltip, tooltip) => hasTooltip ? tooltip : undefined;',
-  //       'props => <div title={titleIfHelper(props.hasTooltip, props.tooltip)}></div>;'
-  //     ];
-  //     expect(jsx).toEqual(expectedLines.join(' '));
-  //   });
-  // });
+  describe('as conditional attribute', () => {
+    test('around single attribute', () => {
+      const jsx = compile('<div{{#if hasTooltip}} title="{{tooltip}}"{{/if}}></div>', true);
+      const expectedLines = [
+        'const titleIfHelper = (hasTooltip, tooltip) => hasTooltip ? tooltip : undefined;',
+        'props => <div title={titleIfHelper(props.hasTooltip, props.tooltip)}></div>;'
+      ];
+      expect(jsx).toEqual(expectedLines.join(' '));
+    });
+  });
 });
 
 describe('context references within partial template', () => {

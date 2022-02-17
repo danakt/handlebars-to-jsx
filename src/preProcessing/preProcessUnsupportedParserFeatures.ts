@@ -1,10 +1,12 @@
 import * as Babel from '@babel/types';
 import { PreparedTemplate } from './preProcessingTypes';
 import { replaceBlockStatementsWithinAttributes, replaceBlockStatementsAroundAttributes } from './blockStatementsWithinNodeTag';
+import replaceAttributeGeneratingHelpers from './replaceAttributeGeneratingHelpers';
 
 const preProcessSteps = [
   replaceBlockStatementsWithinAttributes,
-  replaceBlockStatementsAroundAttributes
+  replaceBlockStatementsAroundAttributes,
+  replaceAttributeGeneratingHelpers
 ];
 
 const preProcessUnsupportedParserFeatures = (handlebarsTemplate: string):PreparedTemplate => {

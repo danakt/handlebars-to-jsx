@@ -13,8 +13,11 @@ export interface AttributeReference {
 };
 
 export interface ReplacementAttributeReference {
-    helper: Babel.VariableDeclaration,
     attribute: string,
     originalStartIndex: number,
     originalLength: number
+};
+
+export interface ReplacementAttributeReferenceWithHelper extends ReplacementAttributeReference {
+    helper: Babel.VariableDeclaration
 };

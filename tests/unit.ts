@@ -121,4 +121,27 @@ describe('preProcessUnsupportedParserFeatures', () => {
       });
     });
   });
+
+  describe('when helper exists as attribute generator', () => {
+    [
+      {
+        template:'<div {{getDataAttributesString data}}></div>',
+        expectedTemplate: '<div _attributeGenerator_="{{getDataAttributesString data}}"></div>',
+        expectedHelpers: []
+      },
+      // { // TODO: support multiple attribute generator helpers within the same opening tag
+      //   template:'<div {{get data}} {{getMore stuff}}></div>',
+      //   expectedTemplate: '',
+      //   expectedHelpers: []
+      // }
+    ].forEach(({ template, expectedTemplate, expectedHelpers }) => {
+      test('should rewrite as custom attribute', () => { // NOTE: this attribute will be further converted later
+        const { template: templateResult, helpers: helpersResult } = preProcessUnsupportedParserFeatures(template);
+        const renderedHelpers = generate(program(helpersResult)).code.split('\n').filter((result) => result);
+
+        expect(templateResult).toEqual(expectedTemplate);
+        expect(renderedHelpers).toEqual(expectedHelpers);
+      });
+    });
+  });
 });

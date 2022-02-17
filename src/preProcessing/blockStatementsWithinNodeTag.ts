@@ -1,6 +1,7 @@
 import * as Babel from '@babel/types';
-import { AttributeReference, ReplacementAttributeReference, PreparedTemplate } from './preProcessingTypes';
+import { AttributeReference, ReplacementAttributeReferenceWithHelper, PreparedTemplate } from './preProcessingTypes';
 import { lowercaseFirstLetter, capitalizeFirstLetter, escapeRegexCharacters } from './utilities';
+import buildNewTemplate from './buildNewTemplate';
 
 // Locate attributes including: <div id='id' class="class" text=text data = "data" mustache={{name}} ...etc
 const getAllAttributesRegex = /(\w+)\s?=\s?["']?((?:.(?!["']?\s+(?:\S+)=|\s*\/?[>"']))+.)["']?/g;
@@ -43,7 +44,7 @@ const getHelperAndAttribute = (attributeName: string, originalHelperName: string
   return { helper, attribute };
 };
 
-const rewriteAttributeAsHelper = ({ attributeName, value, startIndex: originalStartIndex, length: originalLength }: AttributeReference): ReplacementAttributeReference => {
+const rewriteAttributeAsHelper = ({ attributeName, value, startIndex: originalStartIndex, length: originalLength }: AttributeReference): ReplacementAttributeReferenceWithHelper => {
     const attributeValueData = value.match(getDataFromBuiltInHelperRegex);
     if (!attributeValueData) {
       throw `Unsupported block statement found in attribute '${attributeName}'': ${value}`;
@@ -94,8 +95,8 @@ const getConditionalAttributeHelper = (attributeName: string, originalHelperName
   return { helper, attribute };
 };
 
-const getAttributesSurroundedByBlockStatement = (handlebarsTemplate: string):ReplacementAttributeReference[] => {
-  const attributesWithConditionalHelpers:ReplacementAttributeReference[] = [];
+const getAttributesSurroundedByBlockStatement = (handlebarsTemplate: string):ReplacementAttributeReferenceWithHelper[] => {
+  const attributesWithConditionalHelpers:ReplacementAttributeReferenceWithHelper[] = [];
   [...handlebarsTemplate.matchAll(getAllAttributesRegex)].forEach(([originalAttribute, attributeName, value]) => {
     // TODO: support multiple conditional attributes within the same block
     const testRegex = `{{#(if|unless) ([^}]*)}} *${escapeRegexCharacters(originalAttribute)} *{{/(if|unless)}}`;
@@ -118,21 +119,6 @@ const getAttributesSurroundedByBlockStatement = (handlebarsTemplate: string):Rep
   return attributesWithConditionalHelpers;
 }
 
-const buildNewTemplate = (originalTemplate: string, replacementAttributes: ReplacementAttributeReference[]): string => {
-  let template = '';
-  let currentIndexInOriginal = 0;
-  replacementAttributes.forEach(({ attribute, originalStartIndex, originalLength }) => {
-    const portionBeforeAttribute = originalTemplate.substring(currentIndexInOriginal, originalStartIndex);
-    const shouldIncludeSpace = originalStartIndex > 0 && portionBeforeAttribute.charAt(portionBeforeAttribute.length - 1) !== ' ';
- 
-    template += `${portionBeforeAttribute}${shouldIncludeSpace ? ' ' : ''}${attribute}`;
-    currentIndexInOriginal = originalStartIndex + originalLength;
-  });
-  template += originalTemplate.substring(currentIndexInOriginal);
-
-  return template;
-}
-
 export const replaceBlockStatementsWithinAttributes = (handlebarsTemplate: string):PreparedTemplate => {
   const newAttributesWithHelpers = getAttributesContainingBlockStatement(handlebarsTemplate).map(rewriteAttributeAsHelper);
   if (newAttributesWithHelpers.length === 0) {
@@ -146,13 +132,15 @@ export const replaceBlockStatementsWithinAttributes = (handlebarsTemplate: strin
 };
 
 export const replaceBlockStatementsAroundAttributes = (handlebarsTemplate: string):PreparedTemplate => {
-    const newAttributesWithHelpers = getAttributesSurroundedByBlockStatement(handlebarsTemplate);
-    if (newAttributesWithHelpers.length === 0) {
-      return { template: handlebarsTemplate, helpers: [] };
-    }
-  
-    return {
-      template: buildNewTemplate(handlebarsTemplate, newAttributesWithHelpers),
-      helpers: newAttributesWithHelpers.map(({ helper }) => helper)
-    };
+  const newAttributesWithHelpers = getAttributesSurroundedByBlockStatement(handlebarsTemplate);
+  if (newAttributesWithHelpers.length === 0) {
+    return { template: handlebarsTemplate, helpers: [] };
+  }
+
+  return {
+    template: buildNewTemplate(handlebarsTemplate, newAttributesWithHelpers),
+    helpers: newAttributesWithHelpers.map(({ helper }) => helper)
   };
+};
+
+
