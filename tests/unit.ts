@@ -102,7 +102,15 @@ describe('preProcessUnsupportedParserFeatures', () => {
         template:'<div{{#if hasTooltip}} title="{{tooltip}}"{{/if}}></div>',
         expectedTemplate: '<div title="{{titleIfHelper hasTooltip tooltip}}"></div>',
         expectedHelpers: [`const titleIfHelper = (hasTooltip, tooltip) => hasTooltip ? tooltip : undefined;`]
-      }
+      },
+      // { // TODO: support multiple conditional attributes within the same block
+      //   template:'<div{{#if hasTooltip}} title="{{tooltip}}" class="some-class"{{/if}}></div>',
+      //   expectedTemplate: '<div title="{{titleIfHelper hasTooltip tooltip}}" class="{{classIfHelper hasTooltip}}"></div>',
+      //   expectedHelpers: [
+      //     `const titleIfHelper = (hasTooltip, tooltip) => hasTooltip ? tooltip : undefined;`,
+      //     `const classIfHelper = hasTooltip => hasTooltip ? 'some-class' : undefined;`
+      //   ]
+      // }
     ].forEach(({ template, expectedTemplate, expectedHelpers }) => {
       test('should return template with conditional helper functions', () => {
         const { template: templateResult, helpers: helpersResult } = preProcessUnsupportedParserFeatures(template);
