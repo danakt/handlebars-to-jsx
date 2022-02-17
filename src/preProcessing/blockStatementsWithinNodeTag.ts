@@ -1,23 +1,11 @@
 import * as Babel from '@babel/types';
+import { AttributeReference, ReplacementAttributeReference, PreparedTemplate } from './preProcessingTypes';
 
-interface PreparedTemplate {
-  template: string,
-  helpers: Babel.VariableDeclaration[]
-};
+const capitalizeFirstLetter = (input: string):string => input ? `${input[0].toUpperCase()}${input.substring(1)}` : input;
 
-interface AttributeReference {
-  attributeName: string,
-  value: string,
-  startIndex: number,
-  length: number
-};
+const lowercaseFirstLetter = (input: string):string => input ? `${input[0].toLowerCase()}${input.substring(1)}` : input;
 
-interface ReplacementAttributeReference {
-  helper: Babel.VariableDeclaration,
-  attribute: string,
-  originalStartIndex: number,
-  originalLength: number
-};
+const escapeRegexCharacters = (text: string): string => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 
 // Locate attributes including: <div id='id' class="class" text=text data = "data" mustache={{name}} ...etc
 const getAllAttributesRegex = /(\w+)\s?=\s?["']?((?:.(?!["']?\s+(?:\S+)=|\s*\/?[>"']))+.)["']?/g;
@@ -88,12 +76,61 @@ const getAttributesContainingBlockStatement = (handlebarsTemplate: string):Attri
     } as AttributeReference
   });
 
+const getConditionalAttributeHelper = (attributeName: string, originalHelperName: string, originalHelperArg: string, helperChild: string): {
+  helper: Babel.VariableDeclaration,
+  attribute: string
+} => {
+  const contextDependentChild = helperChild.match(containsMustacheStatementRegex);
+  const childIdentifier = contextDependentChild ? Babel.identifier(lowercaseFirstLetter(contextDependentChild[1])) : null;
+  const helperName = `${attributeName.toLowerCase()}${capitalizeFirstLetter(originalHelperName)}Helper`;
+  const shouldNegateArgument = originalHelperName === 'unless';
+  const variableName = Babel.identifier(helperName);
+  const variableFunctionArgumentFromOriginal = Babel.identifier(lowercaseFirstLetter(originalHelperArg));
+  const variableFunctionArguments = childIdentifier ? [variableFunctionArgumentFromOriginal, childIdentifier] : [variableFunctionArgumentFromOriginal];
+  const conditionalCheck = shouldNegateArgument ? Babel.unaryExpression('!', variableFunctionArgumentFromOriginal) : variableFunctionArgumentFromOriginal;
+  const ifTrueResult = childIdentifier ? getIfTrueResultForDependentChild(childIdentifier, null, null) : getIfTrueResultForLiteralChild(helperChild, '', '');
+  const ifFalseResult = Babel.identifier('undefined');
+  const variableFunctionBody = Babel.conditionalExpression(conditionalCheck, ifTrueResult, ifFalseResult);
+  const variableFunction = Babel.arrowFunctionExpression(variableFunctionArguments, variableFunctionBody);
+  const variableDeclarator = Babel.variableDeclarator(variableName, variableFunction);
+  const helper = Babel.variableDeclaration('const', [variableDeclarator]);
+  const attribute = childIdentifier ? `${attributeName}="{{${helperName} ${originalHelperArg} ${childIdentifier.name}}}"` : `${attributeName}="{{${helperName} ${originalHelperArg}}}"`;
+
+  return { helper, attribute };
+};
+
+const getAttributesSurroundedByBlockStatement = (handlebarsTemplate: string):ReplacementAttributeReference[] => {
+  const attributesWithConditionalHelpers:ReplacementAttributeReference[] = [];
+  [...handlebarsTemplate.matchAll(getAllAttributesRegex)].forEach(([originalAttribute, attributeName, value]) => {
+    // TODO: support multiple conditional attributes within the same block
+    const testRegex = `{{#(if|unless) ([^}]*)}} *${escapeRegexCharacters(originalAttribute)} *{{/(if|unless)}}`;
+    const testResults = handlebarsTemplate.match(testRegex);
+    if (!testResults) {
+      return;
+    }
+
+    const [fullMatch, originalHelperName, originalHelperArg] = testResults;
+    const { helper, attribute } = getConditionalAttributeHelper(attributeName, originalHelperName, originalHelperArg, value);
+    const replacementReference = {
+      helper,
+      attribute,
+      originalStartIndex: testResults.index as number,
+      originalLength: fullMatch.length
+    }
+    attributesWithConditionalHelpers.push(replacementReference);
+  });
+
+  return attributesWithConditionalHelpers;
+}
+
 const buildNewTemplate = (originalTemplate: string, replacementAttributes: ReplacementAttributeReference[]): string => {
   let template = '';
   let currentIndexInOriginal = 0;
   replacementAttributes.forEach(({ attribute, originalStartIndex, originalLength }) => {
     const portionBeforeAttribute = originalTemplate.substring(currentIndexInOriginal, originalStartIndex);
-    template += `${portionBeforeAttribute}${attribute}`;
+    const shouldIncludeSpace = originalStartIndex > 0 && portionBeforeAttribute.charAt(portionBeforeAttribute.length - 1) !== ' ';
+ 
+    template += `${portionBeforeAttribute}${shouldIncludeSpace ? ' ' : ''}${attribute}`;
     currentIndexInOriginal = originalStartIndex + originalLength;
   });
   template += originalTemplate.substring(currentIndexInOriginal);
@@ -101,7 +138,7 @@ const buildNewTemplate = (originalTemplate: string, replacementAttributes: Repla
   return template;
 }
 
-const replaceBlockStatementsWithinAttributes = (handlebarsTemplate: string):PreparedTemplate => {
+export const replaceBlockStatementsWithinAttributes = (handlebarsTemplate: string):PreparedTemplate => {
   const newAttributesWithHelpers = getAttributesContainingBlockStatement(handlebarsTemplate).map(rewriteAttributeAsHelper);
   if (newAttributesWithHelpers.length === 0) {
     return { template: handlebarsTemplate, helpers: [] };
@@ -113,8 +150,14 @@ const replaceBlockStatementsWithinAttributes = (handlebarsTemplate: string):Prep
   };
 };
 
-const capitalizeFirstLetter = (input: string):string => input ? `${input[0].toUpperCase()}${input.substring(1)}` : input;
-
-const lowercaseFirstLetter = (input: string):string => input ? `${input[0].toLowerCase()}${input.substring(1)}` : input;
-
-export const preProcessUnsupportedParserFeatures = (handlebarsTemplate: string):PreparedTemplate => replaceBlockStatementsWithinAttributes(handlebarsTemplate);
+export const replaceBlockStatementsAroundAttributes = (handlebarsTemplate: string):PreparedTemplate => {
+    const newAttributesWithHelpers = getAttributesSurroundedByBlockStatement(handlebarsTemplate);
+    if (newAttributesWithHelpers.length === 0) {
+      return { template: handlebarsTemplate, helpers: [] };
+    }
+  
+    return {
+      template: buildNewTemplate(handlebarsTemplate, newAttributesWithHelpers),
+      helpers: newAttributesWithHelpers.map(({ helper }) => helper)
+    };
+  };

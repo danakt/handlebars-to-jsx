@@ -1,7 +1,7 @@
 import { program } from '@babel/types'
 import generate from '@babel/generator';
 import { camelizePropName } from '../src/styles'
-import { preProcessUnsupportedParserFeatures } from '../src/unsupportedParserFeatures';
+import preProcessUnsupportedParserFeatures from '../src/preProcessing/preProcessUnsupportedParserFeatures';
 
 describe('styles', () => {
   test('should convert style prop name to camel case', () => {
@@ -87,6 +87,24 @@ describe('preProcessUnsupportedParserFeatures', () => {
       }
     ].forEach(({ template, expectedTemplate, expectedHelpers }) => {
       test('should return template with helper functions', () => {
+        const { template: templateResult, helpers: helpersResult } = preProcessUnsupportedParserFeatures(template);
+        const renderedHelpers = generate(program(helpersResult)).code.split('\n').filter((result) => result);
+
+        expect(templateResult).toEqual(expectedTemplate);
+        expect(renderedHelpers).toEqual(expectedHelpers);
+      });
+    });
+  });
+
+  describe('when block statement exists as conditional attribute', () => {
+    [
+      {
+        template:'<div{{#if hasTooltip}} title="{{tooltip}}"{{/if}}></div>',
+        expectedTemplate: '<div title="{{titleIfHelper hasTooltip tooltip}}"></div>',
+        expectedHelpers: [`const titleIfHelper = (hasTooltip, tooltip) => hasTooltip ? tooltip : undefined;`]
+      }
+    ].forEach(({ template, expectedTemplate, expectedHelpers }) => {
+      test('should return template with conditional helper functions', () => {
         const { template: templateResult, helpers: helpersResult } = preProcessUnsupportedParserFeatures(template);
         const renderedHelpers = generate(program(helpersResult)).code.split('\n').filter((result) => result);
 

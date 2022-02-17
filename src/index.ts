@@ -4,7 +4,7 @@ import generate                                 from '@babel/generator';
 import * as Babel                               from '@babel/types';
 import { createProgram }                        from './program';
 import { print }                                from './printer';
-import { preProcessUnsupportedParserFeatures }  from './unsupportedParserFeatures';
+import preProcessUnsupportedParserFeatures      from './preProcessing/preProcessUnsupportedParserFeatures';
 
 /**
  * Converts Handlebars code to JSX code
