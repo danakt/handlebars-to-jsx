@@ -57,9 +57,18 @@ export const resolveStatement = (statement: Glimmer.Statement) => {
  * Resolves partial block type
  */
 const resolveHelperFunctionStatement = (statement: MustacheHelperStatement):Babel.CallExpression => {
-  const statementPath = statement.path as Glimmer.PathExpression;
+  const { path, params, hash } = statement;
+  const statementPath = path as Glimmer.PathExpression;
   const functionIdentifier = Babel.identifier(statementPath.parts[statementPath.parts.length - 1]);
-  const functionArguments = statement.params.map((initialParam) => resolveExpression(initialParam));
+  const functionArguments = params.map((initialParam) => resolveExpression(initialParam) as Babel.Expression);
+  const helperOptions = hash.pairs.map(({ key, value }) => Babel.objectProperty(Babel.identifier(key), resolveExpression(value)));
+
+  if (helperOptions.length > 0) {
+    const helperOptionsHashObject = Babel.objectExpression(helperOptions);
+    const helperOptionsHashProperty = Babel.objectProperty(Babel.identifier('hash'), helperOptionsHashObject);
+    const helperOptionsObject = Babel.objectExpression([helperOptionsHashProperty]);
+    functionArguments.push(helperOptionsObject);
+  }
 
   return Babel.callExpression(functionIdentifier, functionArguments);
 };

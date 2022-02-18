@@ -288,6 +288,12 @@ describe('transformation of helper invocations', () => {
     expect(jsxLines).toEqual(expectedLines);
   });
 
+  test('should include helper with custom attribute', () => {
+    const jsx = compile('<div>{{helperFunction data otherData="some text"}}</div>', true);
+    const expectedResult = 'props => <div>{helperFunction(props.data, { hash: { otherData: "some text" } })}</div>;';
+    expect(jsx).toEqual(expectedResult);
+  });
+
   // NOTE: a helper function generating attributes in this manner MUST return an object with key/value pairs being the attribute names & values
   // TODO: add option to toggle the custom helper the custom helper being inline vs external (default)?
   describe('helper functions generating attributes', () => {
@@ -336,7 +342,7 @@ describe('transformation of helper invocations', () => {
           'import React from "react";',
           'import generateAttributes from "./generateAttributes";',
           'import getAttributesString from "./getAttributesString";',
-          'export default (props => <div {...generateAttributes(getAttributesString({ ...props.innerContext, prefix: "data-" }))}></div>);'
+          'export default (props => <div {...generateAttributes(getAttributesString(props.innerContext, { hash: { prefix: "data-" } }))}></div>);'
         ]
       }
     ].forEach(({ template, expectedLines }) => {
