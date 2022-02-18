@@ -6,7 +6,7 @@ import replaceAttributeGeneratingHelpers from './replaceAttributeGeneratingHelpe
 const preProcessSteps = [
   replaceBlockStatementsWithinAttributes,
   replaceBlockStatementsAroundAttributes,
-  replaceAttributeGeneratingHelpers
+  replaceAttributeGeneratingHelpers, // NOTE: this preprocessor has a dependency on having already converted attributes that contain helpers within or around their value
 ];
 
 const preProcessUnsupportedParserFeatures = (handlebarsTemplate: string):PreparedTemplate => {

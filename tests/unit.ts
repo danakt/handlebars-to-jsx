@@ -1,5 +1,6 @@
 import { program } from '@babel/types'
 import generate from '@babel/generator';
+import { ATTRIBUTE_GENERATOR_PLACEHOLDER } from '../src/constants';
 import { camelizePropName } from '../src/styles'
 import preProcessUnsupportedParserFeatures from '../src/preProcessing/preProcessUnsupportedParserFeatures';
 
@@ -103,7 +104,7 @@ describe('preProcessUnsupportedParserFeatures', () => {
         expectedTemplate: '<div title="{{titleIfHelper hasTooltip tooltip}}"></div>',
         expectedHelpers: [`const titleIfHelper = (hasTooltip, tooltip) => hasTooltip ? tooltip : undefined;`]
       },
-      // { // TODO: support multiple conditional attributes within the same block
+      // { // TODO: support multiple conditional attributes within the same block?
       //   template:'<div{{#if hasTooltip}} title="{{tooltip}}" class="some-class"{{/if}}></div>',
       //   expectedTemplate: '<div title="{{titleIfHelper hasTooltip tooltip}}" class="{{classIfHelper hasTooltip}}"></div>',
       //   expectedHelpers: [
@@ -126,10 +127,10 @@ describe('preProcessUnsupportedParserFeatures', () => {
     [
       {
         template:'<div {{getDataAttributesString data}}></div>',
-        expectedTemplate: '<div _attributeGenerator_="{{getDataAttributesString data}}"></div>',
+        expectedTemplate: `<div ${ATTRIBUTE_GENERATOR_PLACEHOLDER}="{{getDataAttributesString data}}"></div>`,
         expectedHelpers: []
       },
-      // { // TODO: support multiple attribute generator helpers within the same opening tag
+      // { // TODO: support multiple attribute generator helpers within the same opening tag?
       //   template:'<div {{get data}} {{getMore stuff}}></div>',
       //   expectedTemplate: '',
       //   expectedHelpers: []
