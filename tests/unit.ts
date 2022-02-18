@@ -130,6 +130,11 @@ describe('preProcessUnsupportedParserFeatures', () => {
         expectedTemplate: `<div ${ATTRIBUTE_GENERATOR_HELPER_FUNCTION}="{{getDataAttributesString data}}"></div>`,
         expectedHelpers: []
       },
+      {
+        template: '<div {{getDataAttributesString data prefix="data-"}}></div>',
+        expectedTemplate: `<div ${ATTRIBUTE_GENERATOR_HELPER_FUNCTION}="{{getDataAttributesString data prefix="data-"}}"></div>`,
+        expectedHelpers: []
+      },
       // { // TODO: support multiple attribute generator helpers within the same opening tag?
       //   template:'<div {{get data}} {{getMore stuff}}></div>',
       //   expectedTemplate: '',

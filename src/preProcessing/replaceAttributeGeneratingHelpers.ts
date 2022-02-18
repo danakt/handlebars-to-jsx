@@ -8,7 +8,7 @@ const getAllOpeningTagDataRegex = /<([^>]*)\/?>/g;
 // NOTE: this will not locate helper's that take 0 args since they cannot be distiniguished from basic mustache statements without additional context
 // NOTE: this will conflict with (valid) helper calls within an attribute's value
 // NOTE: to better distinguish helpers that generate attributes & those that generate part of an attributes' value, build this functionality within the parser itself
-const getAllAttributeGeneratingHelperStatementsRegex = /[^="]\s?{{\s*([\w|\.]+\s+(?:[\w|\.]+\s?)+)}}/g;
+const getAllAttributeGeneratingHelperStatementsRegex = /[^="]\s?{{\s*([\w|\.]+\s+(?:[^}\s]+\s?)+)}}/g;
 
 const getAttributeGeneratorStatements = (handlebarsTemplate: string) => [...handlebarsTemplate.matchAll(getAllOpeningTagDataRegex)].flatMap((matchResult) =>
     getAttributeGeneratorStatementsFromTag(matchResult[0]).map((reference) => ({

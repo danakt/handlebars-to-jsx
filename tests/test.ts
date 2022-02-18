@@ -291,16 +291,60 @@ describe('transformation of helper invocations', () => {
   // NOTE: a helper function generating attributes in this manner MUST return an object with key/value pairs being the attribute names & values
   // TODO: add option to toggle the custom helper the custom helper being inline vs external (default)?
   describe('helper functions generating attributes', () => {
-    test('should include custom helper to convert original helper result into a compatible form', () => {
-      const jsx = compile('<div {{getAttributesString innerContext}}></div>', { isComponent: true, isModule: true, includeImport: true, includeExperimentalFeatures: true });
-      const jsxLines = jsx.split('\n');
-      const expectedLines = [
-        'import React from "react";',
-        'import generateAttributes from "./generateAttributes";',
-        'import getAttributesString from "./getAttributesString";',
-        'export default (props => <div {...generateAttributes(getAttributesString(props.innerContext))}></div>);'
-      ];
-      expect(jsxLines).toEqual(expectedLines);
+    const options = { isComponent: true, isModule: true, includeImport: true, includeExperimentalFeatures: true };
+
+    [
+      {
+        template: '<div {{getAttributesString innerContext}}></div>',
+        expectedLines: [
+          'import React from "react";',
+          'import generateAttributes from "./generateAttributes";',
+          'import getAttributesString from "./getAttributesString";',
+          'export default (props => <div {...generateAttributes(getAttributesString(props.innerContext))}></div>);'
+        ]
+      },
+      {
+        template: '<div {{getAttributesString innerContext}} class="{{#if hasClass}}some-class{{/if}}"></div>',
+        expectedLines: [
+          'import React from "react";',
+          'import generateAttributes from "./generateAttributes";',
+          'import getAttributesString from "./getAttributesString";',
+          'const classIfHelper = hasClass => hasClass ? "some-class" : ""; export default (props => <div {...generateAttributes(getAttributesString(props.innerContext))} className={classIfHelper(props.hasClass)}></div>);'
+        ]
+      },
+      {
+        template: '<div title="{{title}}" {{getAttributesString innerContext}}></div>',
+        expectedLines: [
+          'import React from "react";',
+          'import generateAttributes from "./generateAttributes";',
+          'import getAttributesString from "./getAttributesString";',
+          'export default (props => <div title={props.title} {...generateAttributes(getAttributesString(props.innerContext))}></div>);'
+        ]
+      },
+      {
+        template: '<div title="{{title}}" {{getAttributesString innerContext}} class="{{#if hasClass}}some-class{{/if}}"></div>',
+        expectedLines: [
+          'import React from "react";',
+          'import generateAttributes from "./generateAttributes";',
+          'import getAttributesString from "./getAttributesString";',
+          'const classIfHelper = hasClass => hasClass ? "some-class" : ""; export default (props => <div title={props.title} {...generateAttributes(getAttributesString(props.innerContext))} className={classIfHelper(props.hasClass)}></div>);'
+        ]
+      },
+      {
+        template: '<div {{getAttributesString innerContext prefix="data-"}}></div>',
+        expectedLines: [
+          'import React from "react";',
+          'import generateAttributes from "./generateAttributes";',
+          'import getAttributesString from "./getAttributesString";',
+          'export default (props => <div {...generateAttributes(getAttributesString({ ...props.innerContext, prefix: "data-" }))}></div>);'
+        ]
+      }
+    ].forEach(({ template, expectedLines }) => {
+      test('should include custom helper to convert original helper result into a compatible form', () => {
+        const jsx = compile(template, options);
+        const jsxLines = jsx.split('\n');
+        expect(jsxLines).toEqual(expectedLines);
+      });
     });
   });
 });
