@@ -1,6 +1,6 @@
 import { program } from '@babel/types'
 import generate from '@babel/generator';
-import { ATTRIBUTE_GENERATOR_PLACEHOLDER } from '../src/constants';
+import { ATTRIBUTE_GENERATOR_HELPER_FUNCTION } from '../src/constants';
 import { camelizePropName } from '../src/styles'
 import preProcessUnsupportedParserFeatures from '../src/preProcessing/preProcessUnsupportedParserFeatures';
 
@@ -127,7 +127,7 @@ describe('preProcessUnsupportedParserFeatures', () => {
     [
       {
         template:'<div {{getDataAttributesString data}}></div>',
-        expectedTemplate: `<div ${ATTRIBUTE_GENERATOR_PLACEHOLDER}="{{getDataAttributesString data}}"></div>`,
+        expectedTemplate: `<div ${ATTRIBUTE_GENERATOR_HELPER_FUNCTION}="{{getDataAttributesString data}}"></div>`,
         expectedHelpers: []
       },
       // { // TODO: support multiple attribute generator helpers within the same opening tag?

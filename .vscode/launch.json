@@ -7,7 +7,7 @@
       "request": "launch",
       "env": { "CI": "true" },
       "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "args": ["--runInBand", "--no-cache", "-t should convert the \"\"styles\"\" string with variables to stylesObject$"],
+      "args": ["--runInBand", "--no-cache", "-t should include custom helper to convert original helper result into a compatible form$"],
       "cwd": "${workspaceRoot}",
       "outFiles":[
           "${workspaceFolder}/dist/**/*.js",

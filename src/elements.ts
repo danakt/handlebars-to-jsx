@@ -5,7 +5,7 @@ import * as convertHTMLAttribute                                             fro
 import { createConcat, resolveExpression, createChildren, resolveStatement } from './expressions'
 import { createStyleObject }                                                 from './styles'
 import { getProgramOptions }                                                 from './programContext'
-import { DEFAULT_PARTIAL_NAMESPACE }                                         from './constants'
+import { DEFAULT_PARTIAL_NAMESPACE, ATTRIBUTE_GENERATOR_HELPER_FUNCTION }        from './constants'
 
 /**
  * Creates JSX fragment
@@ -28,10 +28,18 @@ export const createFragment = (
 /**
  * Coverts AttrNode to JSXAttribute
  */
-export const createAttribute = (attrNode: Glimmer.AttrNode): Babel.JSXAttribute | null => {
-  // Unsupported attribute
-  const reactAttrName = convertHTMLAttribute(attrNode.name)
+export const createAttribute = (attrNode: Glimmer.AttrNode): Babel.JSXAttribute | Babel.JSXSpreadAttribute | null => {
+  const { includeExperimentalFeatures } = getProgramOptions();
+  if (includeExperimentalFeatures && attrNode.name === ATTRIBUTE_GENERATOR_HELPER_FUNCTION) {
+    const customHelperIdentifier = Babel.identifier(ATTRIBUTE_GENERATOR_HELPER_FUNCTION);
+    const innerHelperStatement = (attrNode.value as Glimmer.ConcatStatement).parts[0];
+    const innerExpression = resolveStatement(innerHelperStatement);
+    const customHelperCallExpression = Babel.callExpression(customHelperIdentifier, [innerExpression]);
 
+    return Babel.jsxSpreadAttribute(customHelperCallExpression);
+  }
+
+  const reactAttrName = convertHTMLAttribute(attrNode.name)
   if (!/^[_\-A-z0-9]+$/.test(reactAttrName)) {
     return null
   }

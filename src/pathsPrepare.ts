@@ -1,5 +1,5 @@
 import { AST as Glimmer, ASTv1, traverse } from 'glimmer-engine/dist/@glimmer/syntax'
-import { DEFAULT_EACH_LOOP_NAMESPACE, DEFAULT_GLOBAL_NAMESPACE, DEFAULT_PARTIAL_NAMESPACE }   from './constants'
+import { DEFAULT_EACH_LOOP_NAMESPACE, DEFAULT_GLOBAL_NAMESPACE, DEFAULT_PARTIAL_NAMESPACE, ATTRIBUTE_GENERATOR_HELPER_FUNCTION }   from './constants'
 import { getProgramOptions } from './programContext'
 import { isMustacheHelperStatement } from './types';
 
@@ -40,7 +40,7 @@ const createNamespaceStack = () => {
  * Prepares paths Glimmer AST for compatible with JS AST.
  */
 export const prepareProgramPaths = (programTemplate: Glimmer.Template) => {
-  const { isComponent, includeContext } = getProgramOptions(); 
+  const { isComponent, includeContext, includeExperimentalFeatures } = getProgramOptions(); 
   const namespaces = createNamespaceStack()
   const partialTemplates:string[] = []; // TODO: update to include references to their props
   const helperFunctions:string[] = []; // TODO: update to include references to their props
@@ -90,6 +90,11 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template) => {
         if (!partialTemplates.includes(functionName)) {
           helperFunctions.push(functionName);
         }
+      }
+    },
+    AttrNode(node: Glimmer.AttrNode) {
+      if (includeExperimentalFeatures && node.name === ATTRIBUTE_GENERATOR_HELPER_FUNCTION && !partialTemplates.includes(ATTRIBUTE_GENERATOR_HELPER_FUNCTION)) {
+        helperFunctions.push(ATTRIBUTE_GENERATOR_HELPER_FUNCTION);
       }
     },
 

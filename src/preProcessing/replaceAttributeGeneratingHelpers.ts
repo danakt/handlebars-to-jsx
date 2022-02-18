@@ -1,5 +1,5 @@
 import { ReplacementAttributeReference, PreparedTemplate } from './preProcessingTypes';
-import { ATTRIBUTE_GENERATOR_PLACEHOLDER } from '../constants';
+import { ATTRIBUTE_GENERATOR_HELPER_FUNCTION } from '../constants';
 import buildNewTemplate from './buildNewTemplate';
 
 const getAllOpeningTagDataRegex = /<([^>]*)\/?>/g;
@@ -27,7 +27,7 @@ const getAttributeGeneratorStatementsFromTag = (htmlOpeningTag: string):Replacem
 
         return {
             helper: null,
-            attribute: `${ATTRIBUTE_GENERATOR_PLACEHOLDER}="{{${helperName} ${helperArgs.join(' ')}}}"`,
+            attribute: `${ATTRIBUTE_GENERATOR_HELPER_FUNCTION}="{{${helperName} ${helperArgs.join(' ')}}}"`,
             originalStartIndex,
             originalLength
         };

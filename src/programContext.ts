@@ -2,7 +2,8 @@ interface ProgramOptions {
     isComponent: boolean
     isModule: boolean
     includeImport: boolean
-    includeContext: boolean
+    includeContext: boolean,
+    includeExperimentalFeatures: boolean
   };
 
 const context:{
@@ -12,7 +13,8 @@ const context:{
         isComponent: false,
         isModule: false,
         includeImport: false,
-        includeContext: false
+        includeContext: false,
+        includeExperimentalFeatures: false
     }
 };
 

@@ -46,7 +46,7 @@ export function compile(
     helpers: []
   };
   const glimmerProgram = preprocess(preparedTemplate.template)
-  const babelProgram: Babel.Program = createProgram(glimmerProgram, isComponent, isModule, includeImport, includeContext, preparedTemplate.helpers)
+  const babelProgram: Babel.Program = createProgram(glimmerProgram, isComponent, isModule, includeImport, includeContext, includeExperimentalFeatures, preparedTemplate.helpers)
   const generatedCode = generate(babelProgram).code;
 
   return print(generatedCode);

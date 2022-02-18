@@ -33,9 +33,11 @@ export const createProgram = (
   isModule: boolean,
   includeImport: boolean,
   includeContext: boolean,
+  includeExperimentalFeatures: boolean,
   helpers: Babel.VariableDeclaration[]
 ): Babel.Program => {
-  setProgramOptions({ isComponent, isModule, includeImport, includeContext });
+  setProgramOptions({ isComponent, isModule, includeImport, includeContext, includeExperimentalFeatures });
+  
   const { partialTemplates, helperFunctions } = prepareProgramPaths(hbsProgram);
   const inlineHelperNames = helpers.map((helperDeclaration) => (helperDeclaration.declarations[0].id as Babel.Identifier).name);
   const externalHelpers = helperFunctions.filter((helper) => !inlineHelperNames.includes(helper));
