@@ -289,10 +289,10 @@ describe('transformation of helper invocations', () => {
   });
 
   // NOTE: a helper function generating attributes in this manner MUST return an object with key/value pairs being the attribute names & values
-  // TODO: add option to toggle the custom helper the custom helper being inline vs external (default)
+  // TODO: add option to toggle the custom helper the custom helper being inline vs external (default)?
   describe('helper functions generating attributes', () => {
     test('should include custom helper to convert original helper result into a compatible form', () => {
-      const jsx = compile('<div {{getAttributesString innerContext}}></div>', { isComponent: true, isModule: true, includeImport: true });
+      const jsx = compile('<div {{getAttributesString innerContext}}></div>', { isComponent: true, isModule: true, includeImport: true, includeExperimentalFeatures: true });
       const jsxLines = jsx.split('\n');
       const expectedLines = [
         'import React from "react";',
@@ -305,19 +305,28 @@ describe('transformation of helper invocations', () => {
   });
 });
 
-// NOTE: custom helpers within an attribute are not (currently) compatible with the preprocessor that rewrites attribute generating helpers...
-// describe('custom helper within attribute value', () => {
-//   test('custom helper within class attribute', () => {
-//     const jsx = compile('<div class="first-class {{someHelper hasData data}} other-class"></div>', true);
-//     const expectedJsx = 'props => <div className={"first-class " + someHelper(props.hasData, props.data) + " other-class"}></div>;';
-//     expect(jsx).toEqual(expectedJsx);
-//   });
-// });
+// NOTE: custom helpers within an opening tag are not (currently) compatible with the preprocessor that rewrites attribute generating helpers (i.e. no mixing with experimental features)...
+describe('custom helper within attribute value', () => {
+  const defaultOptions = { isComponent: true, isModule: false, includeImport: false, includeExperimentalFeatures: false };
+
+  test('custom helper within class attribute, includeExperimentalFeatures false', () => {
+    const jsx = compile('<div class="first-class {{someHelper hasData data}} other-class"></div>', { ...defaultOptions, includeExperimentalFeatures: false });
+    const expectedJsx = 'props => <div className={"first-class " + someHelper(props.hasData, props.data) + " other-class"}></div>;';
+    expect(jsx).toEqual(expectedJsx);
+  });
+
+  test('custom helper within class attribute, includeExperimentalFeatures true', () => {
+    const testDelegate = () => compile('<div class="first-class {{someHelper hasData data}} other-class"></div>', { ...defaultOptions, includeExperimentalFeatures: true });
+    expect(testDelegate).toThrow();
+  });
+});
 
 describe('block statement in opening tag', () => {
+  const defaultOptions = { isComponent: true, isModule: false, includeImport: false, includeExperimentalFeatures: true };
+
   describe('within attribute value', () => {
     test('unless helper within class attribute', () => {
-      const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', true);
+      const jsx = compile('<div class="{{#unless CanEdit}}is-disabled{{/unless}}"></div>', defaultOptions);
       const expectedLines = [
         'const classUnlessHelper = canEdit => !canEdit ? "is-disabled" : "";',
         'props => <div className={classUnlessHelper(props.CanEdit)}></div>;'
@@ -326,7 +335,7 @@ describe('block statement in opening tag', () => {
     });
   
     test('if helper within class attribute', () => {
-      const jsx = compile('<div class="{{#if CanEdit}}is-disabled{{/if}} other-class"></div>', true);
+      const jsx = compile('<div class="{{#if CanEdit}}is-disabled{{/if}} other-class"></div>', defaultOptions);
       const expectedLines = [
         'const classIfHelper = canEdit => canEdit ? "is-disabled other-class" : " other-class";',
         'props => <div className={classIfHelper(props.CanEdit)}></div>;'
@@ -335,7 +344,7 @@ describe('block statement in opening tag', () => {
     });
   
     test('if helper within class attribute and custom helper in body', () => {
-      const jsx = compile('<div class="{{#if canEdit}}is-disabled{{/if}}">{{someHelper hasData data}}</div>', true);
+      const jsx = compile('<div class="{{#if canEdit}}is-disabled{{/if}}">{{someHelper hasData data}}</div>', defaultOptions);
       const expectedLines = [
         'const classIfHelper = canEdit => canEdit ? "is-disabled" : "";',
         'props => <div className={classIfHelper(props.canEdit)}>{someHelper(props.hasData, props.data)}</div>;'
@@ -344,7 +353,7 @@ describe('block statement in opening tag', () => {
     });
   
     test('if helper within class attribute and custom helper in body, includeImport true', () => {
-      const jsx = compile('<div class="{{#if canEdit}}is-disabled{{/if}}">{{someHelper hasData data}}</div>', { isComponent: true, isModule: true, includeImport: true });
+      const jsx = compile('<div class="{{#if canEdit}}is-disabled{{/if}}">{{someHelper hasData data}}</div>', { ...defaultOptions, isModule: true, includeImport: true });
       const jsxLines = jsx.split('\n');
       const expectedLines = [
         'import React from "react";',
@@ -357,7 +366,7 @@ describe('block statement in opening tag', () => {
 
   describe('as conditional attribute', () => {
     test('around single attribute', () => {
-      const jsx = compile('<div{{#if hasTooltip}} title="{{tooltip}}"{{/if}}></div>', true);
+      const jsx = compile('<div{{#if hasTooltip}} title="{{tooltip}}"{{/if}}></div>', defaultOptions);
       const expectedLines = [
         'const titleIfHelper = (hasTooltip, tooltip) => hasTooltip ? tooltip : undefined;',
         'props => <div title={titleIfHelper(props.hasTooltip, props.tooltip)}></div>;'

@@ -17,6 +17,7 @@ export function compile(hbsCode: string, isComponent?: boolean): string
  * @param [options.isModule] Should return generated code exported as default
  * @param [options.includeImport] Should include react import
  * @param [options.alwaysIncludeContext] Should always contain a template's context reference within the top-level props
+ * @param [options.includeExperimentalFeatures] Should execute preprocessors to convert features not supported by the Glimmer parser (has limitations/restrictions)
  * @returns JSX code
  */
-export function compile(hbsCode: string, options?: { isComponent?: boolean; isModule?: boolean, includeImport?: boolean, alwaysIncludeContext?: boolean }): string
+export function compile(hbsCode: string, options?: { isComponent?: boolean; isModule?: boolean, includeImport?: boolean, alwaysIncludeContext?: boolean, includeExperimentalFeatures?: boolean }): string
