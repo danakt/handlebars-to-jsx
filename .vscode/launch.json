@@ -7,7 +7,7 @@
       "request": "launch",
       "env": { "CI": "true" },
       "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "args": ["--runInBand", "--no-cache", "-t alwaysIncludeContext true, should include single context property$"],
+      "args": ["--runInBand", "--no-cache", "-t alwaysIncludeContext true, without main context, should include custom attributes in context property$"],
       "cwd": "${workspaceRoot}",
       "outFiles":[
           "${workspaceFolder}/dist/**/*.js",
