@@ -489,6 +489,12 @@ describe('with handlebars partial statement', () => {
     expect(jsx).toEqual(expectedResult);
   })
 
+  test('alwaysIncludeContext true, should include single context property', () => {
+    const jsx = compile('<div>{{firstname}} {{lastname}}{{>SomePartial innerContext}}</div>', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: true });
+    const expectedResult = 'props => <div>{props.context.firstname} {props.context.lastname}<SomePartial context={props.context.innerContext} /></div>;';
+    expect(jsx).toEqual(expectedResult);
+  })
+
   describe('custom attribute on partial statement', () => {
     test('alwaysIncludeContext false, should specify props individually', () => {
       const jsx = compile('<div>{{firstname}} {{lastname}}{{>SomePartial innerContext otherData=firstname}}</div>', { isComponent: true, isModule: false, includeImport: true, alwaysIncludeContext: false });

@@ -109,7 +109,7 @@ const createJsxAttribute = (hashPair: Glimmer.HashPair): Babel.JSXAttribute => {
   return Babel.jsxAttribute(nameIdentifier, valueExpressionContainer);
 };
 
-const createPropsSpreadContextAttribute = (paramExpression: Glimmer.Expression | null, customAttributes: Glimmer.HashPair[]): Babel.JSXAttribute | null => {
+const createPropsSpreadContextAttribute = (paramExpression: Glimmer.Expression | null, customAttributes: Glimmer.HashPair[]): Babel.JSXAttribute => {
   const customProperties: (Babel.SpreadElement | Babel.ObjectProperty)[] = customAttributes.map(createObjectProperty);
 
   if (paramExpression !== null) {
@@ -118,12 +118,27 @@ const createPropsSpreadContextAttribute = (paramExpression: Glimmer.Expression |
     customProperties.unshift(propsSpreadElement);
   }
 
-  if (customProperties.length === 0) {
+  const valueExpression = Babel.objectExpression(customProperties);
+  const valueExpressionContainer = Babel.jsxExpressionContainer(valueExpression);
+  const nameIdentifier = Babel.jsxIdentifier(DEFAULT_PARTIAL_NAMESPACE);
+
+  return Babel.jsxAttribute(nameIdentifier, valueExpressionContainer);
+};
+
+const createPropsContextAttribute = (paramExpression: Glimmer.Expression | null, customAttributes: Glimmer.HashPair[]): Babel.JSXAttribute | null => {
+  if (paramExpression === null && customAttributes.length === 0) {
     return null;
   }
 
-  const valueExpression = Babel.objectExpression(customProperties);
-  const valueExpressionContainer = Babel.jsxExpressionContainer(valueExpression);
+  if (customAttributes.length > 0) {
+    return createPropsSpreadContextAttribute(paramExpression, customAttributes);
+  }
+  else if (paramExpression === null) {
+    return null;
+  }
+
+  const innerValueExpression = resolveExpression(paramExpression);
+  const valueExpressionContainer = Babel.jsxExpressionContainer(innerValueExpression);
   const nameIdentifier = Babel.jsxIdentifier(DEFAULT_PARTIAL_NAMESPACE);
 
   return Babel.jsxAttribute(nameIdentifier, valueExpressionContainer);
@@ -142,7 +157,7 @@ const createPropsSpreadAttribute = (paramExpression: Glimmer.Expression | null):
 const getAttributes = (partialStatement: Glimmer.PartialStatement): (Babel.JSXAttribute | Babel.JSXSpreadAttribute)[] => {
   const { includeContext } = getProgramOptions();
   const contextParameter = partialStatement.params.length === 0 ? null : partialStatement.params[0];
-  const propsSpreadAttribute = includeContext ? createPropsSpreadContextAttribute(contextParameter, partialStatement.hash.pairs) : createPropsSpreadAttribute(contextParameter);
+  const propsSpreadAttribute = includeContext ? createPropsContextAttribute(contextParameter, partialStatement.hash.pairs) : createPropsSpreadAttribute(contextParameter);
   if (propsSpreadAttribute === null) {
     return [];
   }
