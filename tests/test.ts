@@ -204,12 +204,24 @@ describe('block statements', () => {
         recompile('props => <div>{Boolean(props.person) ? <span>{props.person.firstName} {props.person.lastName}</span> : <span>NA</span>}</div>')
       )
     })
+
+    test('should use correct context when traversing back into parent context', () => {
+      expect(compile('<div>{{#with person}}<span>{{#if ../showFirstName}}{{firstName}} {{/if}}{{lastName}}</span>{{/with}}</div>')).toBe(
+        recompile('props => <div>{Boolean(props.person) && <span>{Boolean(props.showFirstName) && <React.Fragment>{props.person.firstName} </React.Fragment>}{props.person.lastName}</span>}</div>')
+      )
+    })
   })
 
   describe('each statement', () => {
     test('each block statement', () => {
       expect(compile('<div>{{#each list}}<div id={{this.id}} />{{/each}}</div>')).toBe(
         'props => <div>{props.list.map((item, i) => <div id={item.id} key={i} />)}</div>;'
+      )
+    })
+
+    test('each block statement with context traversing back into parent context', () => {
+      expect(compile('<div>{{#each list}}<div id={{this.id}}>{{#if ../showUrl}}<a href="{{../url}}">Click</a>{{/if}}</div>{{/each}}</div>')).toBe(
+        'props => <div>{props.list.map((item, i) => <div id={item.id} key={i}>{Boolean(props.showUrl) && <a href={props.url}>Click</a>}</div>)}</div>;'
       )
     })
 
