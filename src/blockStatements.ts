@@ -21,6 +21,12 @@ export const resolveBlockStatement = (blockStatement: Glimmer.BlockStatement) =>
       return createEachStatement(blockStatement)
     }
 
+    // TODO: consider an alternative approach to handling 'with' statements...
+    // treat the inner contents as a separate template, maintaining the flatter property retrieval
+    case 'with': { // TODO: does this handle with-else by default?
+      return createConditionStatement(blockStatement, false)
+    }
+
     default: {
       throw new Error(`Unexpected ${(blockStatement.path as Glimmer.PathExpression).original} statement`)
     }

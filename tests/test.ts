@@ -192,6 +192,18 @@ describe('block statements', () => {
         recompile('props => Boolean(props.variable) ? <div /> : <span />;')
       )
     })
+
+    test('should convert with contextual helper, expanding properties', () => {
+      expect(compile('<div>{{#with person}}<span>{{firstName}} {{lastName}}</span>{{/with}}</div>')).toBe(
+        recompile('props => <div>{Boolean(props.person) && <span>{props.person.firstName} {props.person.lastName}</span>}</div>')
+      )
+    })
+
+    test('should convert condition with-else contextual helper', () => {
+      expect(compile('<div>{{#with person}}<span>{{firstName}} {{lastName}}</span>{{else}}<span>NA</span>{{/with}}</div>')).toBe(
+        recompile('props => <div>{Boolean(props.person) ? <span>{props.person.firstName} {props.person.lastName}</span> : <span>NA</span>}</div>')
+      )
+    })
   })
 
   describe('each statement', () => {

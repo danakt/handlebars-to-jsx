@@ -9,6 +9,9 @@ import { isMustacheHelperStatement } from './types';
 const isEachStatement = (node: Glimmer.Node): node is Glimmer.BlockStatement =>
   node.type === 'BlockStatement' && (node.path as Glimmer.PathExpression).original === 'each'
 
+const isWithStatement = (node: Glimmer.Node): node is Glimmer.BlockStatement =>
+  node.type === 'BlockStatement' && (node.path as Glimmer.PathExpression).original === 'with'
+
 /**
  * Creates stack of namespaces
  */
@@ -32,7 +35,9 @@ const createNamespaceStack = () => {
     pop: () => namespaces.pop(),
 
     /** Returns head item of the stack */
-    head: () => namespaces[namespaces.length - 1]
+    head: () => namespaces[namespaces.length - 1],
+
+    currentPath: () => namespaces.reduce((aggregate, { name }) => aggregate !== '' ? `${aggregate}.${name}` : name, '')
   }
 }
 
@@ -52,6 +57,8 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template) => {
   }
 
   let eachStatementEntered = false
+  let withStatementEntered = false
+  let withStatementContextProperty = ''
 
   traverse(programTemplate, {
     // Process block statements
@@ -66,6 +73,19 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template) => {
 
         if (isEachStatement(node)) {
           eachStatementEntered = true
+        }
+
+        if (node.type === 'Block' && withStatementEntered) {
+          const currentPath = namespaces.currentPath()
+          const withContextPath = currentPath !== '' ? `${currentPath}.${withStatementContextProperty}` : withStatementContextProperty;
+          namespaces.push({ node, name: withContextPath })
+          withStatementEntered = false
+          withStatementContextProperty = ''
+        }
+
+        if (isWithStatement(node)) {
+          withStatementEntered = true
+          withStatementContextProperty = (node.params[0] as Glimmer.PathExpression).original
         }
 
         if (node.type === 'PartialStatement') {
