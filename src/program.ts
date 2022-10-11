@@ -18,6 +18,10 @@ const getImportDirectives = (externals: string[]):Babel.ImportDeclaration[] => {
   return [reactImport, ...externalImports];
 };
 
+const uniqueArrayFilter = (value: string, index: number, self: string[]) => {
+  return self.indexOf(value) === index;
+}
+
 /**
  * Creates program statement
  * @param hbsProgram The Handlebars program (root AST node)
@@ -41,7 +45,7 @@ export const createProgram = (
   const { partialTemplates, helperFunctions } = prepareProgramPaths(hbsProgram);
   const inlineHelperNames = helpers.map((helperDeclaration) => (helperDeclaration.declarations[0].id as Babel.Identifier).name);
   const externalHelpers = helperFunctions.filter((helper) => !inlineHelperNames.includes(helper));
-  const externals = [...partialTemplates, ...externalHelpers];
+  const externals = [...partialTemplates, ...externalHelpers].filter(uniqueArrayFilter);
 
   const componentBody = createRootChildren(hbsProgram.body);
   const expression = isComponent ? createComponent(componentBody) : componentBody;

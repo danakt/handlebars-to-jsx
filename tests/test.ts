@@ -300,6 +300,17 @@ describe('transformation of helper invocations', () => {
     expect(jsxLines).toEqual(expectedLines);
   });
 
+  test('should include import of helper function when includeImport is true, only import once', () => {
+    const jsx = compile('<div>{{helperFunction data}}<div>{{helperFunction data}}</div></div>', { isComponent: true, isModule: true, includeImport: true });
+    const jsxLines = jsx.split('\n');
+    const expectedLines = [
+      'import React from "react";',
+      'import helperFunction from "./helperFunction";',
+      'export default (props => <div>{helperFunction(props.data)}<div>{helperFunction(props.data)}</div></div>);'
+    ];
+    expect(jsxLines).toEqual(expectedLines);
+  });
+
   test('should include helper with custom attribute', () => {
     const jsx = compile('<div>{{helperFunction data otherData="some text"}}</div>', true);
     const expectedResult = 'props => <div>{helperFunction(props.data, { hash: { otherData: "some text" } })}</div>;';
