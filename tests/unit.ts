@@ -121,6 +121,22 @@ describe('preProcessUnsupportedParserFeatures', () => {
         expect(renderedHelpers).toEqual(expectedHelpers);
       });
     });
+
+    [
+      {
+        template:'{{#each list}}<td class="{{#unless ../isItemized}}edit-inline{{/unless}}"></td>{{/each}}',
+        expectedTemplate: '{{#each list}}<td class="{{classUnlessHelper ../isItemized}}"></td>{{/each}}',
+        expectedHelpers: [`const classUnlessHelper = isItemized => !isItemized ? "edit-inline" : "";`]
+      }
+    ].forEach(({ template, expectedTemplate, expectedHelpers }) => {
+      test('should use correct context when template property traverses back into parent context', () => {
+        const { template: templateResult, helpers: helpersResult } = preProcessUnsupportedParserFeatures(template);
+        const renderedHelpers = generate(program(helpersResult)).code.split('\n').filter((result) => result);
+
+        expect(templateResult).toEqual(expectedTemplate);
+        expect(renderedHelpers).toEqual(expectedHelpers);
+      });
+    });
   });
 
   describe('when helper exists as attribute generator', () => {

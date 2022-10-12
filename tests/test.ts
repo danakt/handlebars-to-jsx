@@ -225,6 +225,12 @@ describe('block statements', () => {
       )
     })
 
+    test('each block statement, nested in block statement, with context traversing back into parent context', () => {
+      expect(compile('{{#if list}}<div>{{#each list}}<div id={{this.id}}>{{#if ../showUrl}}<a href="{{../url}}">Click</a>{{/if}}</div>{{/each}}</div>{{/if}}')).toBe(
+        'props => Boolean(props.list) && <div>{props.list.map((item, i) => <div id={item.id} key={i}>{Boolean(props.showUrl) && <a href={props.url}>Click</a>}</div>)}</div>;'
+      )
+    })
+
     test('nested each block statements', () => {
       expect(compile('<div>{{#each list}}{{#each nestedOuter.inner}}<div id={{deeplyNested}} />{{/each}}{{/each}}</div>')).toBe(
         'props => <div>{props.list.map((item, i) => <React.Fragment key={i}>{item.nestedOuter.inner.map((item, i) => <div id={item.deeplyNested} key={i} />)}</React.Fragment>)}</div>;'

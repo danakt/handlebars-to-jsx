@@ -30,7 +30,8 @@ const getHelperAndAttribute = (attributeName: string, originalHelperName: string
   const helperName = `${attributeName.toLowerCase()}${capitalizeFirstLetter(originalHelperName)}Helper`;
   const shouldNegateArgument = originalHelperName === 'unless';
   const variableName = Babel.identifier(helperName);
-  const variableFunctionArgumentFromOriginal = Babel.identifier(lowercaseFirstLetter(originalHelperArg));
+  const contextualizedHelperArg = originalHelperArg.replaceAll("../", "")
+  const variableFunctionArgumentFromOriginal = Babel.identifier(lowercaseFirstLetter(contextualizedHelperArg));
   const variableFunctionArguments = childIdentifier ? [variableFunctionArgumentFromOriginal, childIdentifier] : [variableFunctionArgumentFromOriginal];
   const conditionalCheck = shouldNegateArgument ? Babel.unaryExpression('!', variableFunctionArgumentFromOriginal) : variableFunctionArgumentFromOriginal;
   const ifTrueResult = childIdentifier ? getIfTrueResultForDependentChild(childIdentifier, leadingData, trailingData) : getIfTrueResultForLiteralChild(helperChild, leadingData ?? '', trailingData ?? '');
@@ -81,7 +82,8 @@ const getConditionalAttributeHelper = (attributeName: string, originalHelperName
   const helperName = `${attributeName.toLowerCase()}${capitalizeFirstLetter(originalHelperName)}Helper`;
   const shouldNegateArgument = originalHelperName === 'unless';
   const variableName = Babel.identifier(helperName);
-  const variableFunctionArgumentFromOriginal = Babel.identifier(lowercaseFirstLetter(originalHelperArg));
+  const contextualizedHelperArg = originalHelperArg.replaceAll("../", "")
+  const variableFunctionArgumentFromOriginal = Babel.identifier(lowercaseFirstLetter(contextualizedHelperArg));
   const variableFunctionArguments = childIdentifier ? [variableFunctionArgumentFromOriginal, childIdentifier] : [variableFunctionArgumentFromOriginal];
   const conditionalCheck = shouldNegateArgument ? Babel.unaryExpression('!', variableFunctionArgumentFromOriginal) : variableFunctionArgumentFromOriginal;
   const ifTrueResult = childIdentifier ? getIfTrueResultForDependentChild(childIdentifier, null, null) : getIfTrueResultForLiteralChild(helperChild, '', '');
