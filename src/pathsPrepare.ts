@@ -60,6 +60,8 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template) => {
   let withStatementEntered = false
   let withStatementContextProperty = ''
 
+  let nestedContextStack: string[] = []
+
   traverse(programTemplate, {
     // Process block statements
     All: {
@@ -67,6 +69,7 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template) => {
       // TODO: verify nested each statements work
       enter(node: Glimmer.Node) {
         if (node.type === 'Block' && eachStatementEntered) {
+          nestedContextStack.push(namespaces.currentPath())
           namespaces.push({ node })
           eachStatementEntered = false
         }
@@ -78,6 +81,7 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template) => {
         if (node.type === 'Block' && withStatementEntered) {
           const currentPath = namespaces.currentPath()
           const withContextPath = currentPath !== '' ? `${currentPath}.${withStatementContextProperty}` : withStatementContextProperty;
+          nestedContextStack.push(currentPath)
           namespaces.push({ node, name: withContextPath })
           withStatementEntered = false
           withStatementContextProperty = ''
@@ -96,6 +100,10 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template) => {
         }
       },
       exit(node: Glimmer.Node) {
+        if (isEachStatement(node) || isWithStatement(node)) {
+          nestedContextStack.splice(nestedContextStack.length - 1, 1)
+        }
+        
         // Exit from namespace
         if (namespaces.length > 0 && node === namespaces.head().node) {
           namespaces.pop()
@@ -118,12 +126,18 @@ export const prepareProgramPaths = (programTemplate: Glimmer.Template) => {
       }
     },
 
-    // Process path expressions
+    // Process path expressions (i.e. add prefixes)
     PathExpression(node: Glimmer.PathExpression) {
-      // Add prefixes
-      if (namespaces.length) {
-        node.parts.unshift(namespaces.head().name)
+      if (namespaces.length === 0) return;
+
+      let context = namespaces.head().name
+      const original = node.original
+      if (original.startsWith('..')) { // TODO: update to handle traversing further than 1 step back
+        const parentContextName = nestedContextStack.length > 0 ? nestedContextStack[nestedContextStack.length - 1] : namespaces.currentPath();
+        context = parentContextName
       }
+
+      node.parts.unshift(context)
     }
   });
 

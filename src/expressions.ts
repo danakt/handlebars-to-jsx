@@ -164,7 +164,7 @@ export const createPath = (pathExpression: Glimmer.PathExpression): Babel.Identi
     throw new Error('Unexpected empty expression parts')
   }
 
-  // Start identifier - NOTE: we're expecting a pre-existing 'props' at th top-level
+  // Start identifier - NOTE: we're expecting a pre-existing 'props' at the top-level
   let acc: Babel.Identifier | Babel.MemberExpression = Babel.identifier(parts[0]);
 
   for (let i = 1; i < parts.length; i++) {
