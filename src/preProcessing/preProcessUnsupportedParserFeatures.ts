@@ -13,7 +13,7 @@ const preProcessUnsupportedParserFeatures = (handlebarsTemplate: string):Prepare
   let template = handlebarsTemplate;
   let helpers: Babel.VariableDeclaration[] = [];
   preProcessSteps.forEach((preProcess) => {
-    const { template: nextTemplate, helpers: nextHelpers } = preProcess(template);
+    const { template: nextTemplate, helpers: nextHelpers } = preProcess(template, helpers.length + 1);
     template = nextTemplate;
     helpers = [...helpers, ...nextHelpers];
   });

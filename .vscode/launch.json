@@ -7,7 +7,7 @@
       "request": "launch",
       "env": { "CI": "true" },
       "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "args": ["--runInBand", "--no-cache", "-t should use correct context when template property traverses back into parent context$"],
+      "args": ["--runInBand", "--no-cache", "-t should use unique name when multiple helpers exist for same attribute type$"],
       "cwd": "${workspaceRoot}",
       "outFiles":[
           "${workspaceFolder}/dist/**/*.js",

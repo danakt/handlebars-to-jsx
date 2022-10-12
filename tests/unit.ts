@@ -75,10 +75,10 @@ describe('preProcessUnsupportedParserFeatures', () => {
       },
       {
         template: '<div id="{{#if isTrue}}{{id}}{{/if}}" title={{#unless isTrue}}title{{/if}}></div>',
-        expectedTemplate: '<div id="{{idIfHelper isTrue id}}" title="{{titleUnlessHelper isTrue}}"></div>',
+        expectedTemplate: '<div id="{{idIfHelper isTrue id}}" title="{{titleUnlessHelper2 isTrue}}"></div>',
         expectedHelpers: [
           'const idIfHelper = (isTrue, id) => isTrue ? id : "";',
-          'const titleUnlessHelper = isTrue => !isTrue ? "title" : "";'
+          'const titleUnlessHelper2 = isTrue => !isTrue ? "title" : "";'
         ]
       },
       {
@@ -88,6 +88,22 @@ describe('preProcessUnsupportedParserFeatures', () => {
       }
     ].forEach(({ template, expectedTemplate, expectedHelpers }) => {
       test('should return template with helper functions', () => {
+        const { template: templateResult, helpers: helpersResult } = preProcessUnsupportedParserFeatures(template);
+        const renderedHelpers = generate(program(helpersResult)).code.split('\n').filter((result) => result);
+
+        expect(templateResult).toEqual(expectedTemplate);
+        expect(renderedHelpers).toEqual(expectedHelpers);
+      });
+    });
+
+    [
+      {
+        template:'{{#each list}}<td class="{{#unless ../isItemized}}edit-inline{{/unless}}"></td>{{/each}}',
+        expectedTemplate: '{{#each list}}<td class="{{classUnlessHelper ../isItemized}}"></td>{{/each}}',
+        expectedHelpers: [`const classUnlessHelper = isItemized => !isItemized ? "edit-inline" : "";`]
+      }
+    ].forEach(({ template, expectedTemplate, expectedHelpers }) => {
+      test('should use correct context when template property traverses back into parent context', () => {
         const { template: templateResult, helpers: helpersResult } = preProcessUnsupportedParserFeatures(template);
         const renderedHelpers = generate(program(helpersResult)).code.split('\n').filter((result) => result);
 
@@ -124,12 +140,31 @@ describe('preProcessUnsupportedParserFeatures', () => {
 
     [
       {
-        template:'{{#each list}}<td class="{{#unless ../isItemized}}edit-inline{{/unless}}"></td>{{/each}}',
+        template:'{{#each list}}<td {{#unless ../isItemized}} class="edit-inline"{{/unless}}></td>{{/each}}',
         expectedTemplate: '{{#each list}}<td class="{{classUnlessHelper ../isItemized}}"></td>{{/each}}',
-        expectedHelpers: [`const classUnlessHelper = isItemized => !isItemized ? "edit-inline" : "";`]
+        expectedHelpers: [`const classUnlessHelper = isItemized => !isItemized ? "edit-inline" : undefined;`]
       }
     ].forEach(({ template, expectedTemplate, expectedHelpers }) => {
       test('should use correct context when template property traverses back into parent context', () => {
+        const { template: templateResult, helpers: helpersResult } = preProcessUnsupportedParserFeatures(template);
+        const renderedHelpers = generate(program(helpersResult)).code.split('\n').filter((result) => result);
+
+        expect(templateResult).toEqual(expectedTemplate);
+        expect(renderedHelpers).toEqual(expectedHelpers);
+      });
+    });
+
+    [
+      {
+        template:'<div{{#if hasTooltip}} title="{{tooltip}}"{{/if}}><span title="{{#if hasInnerTooltip}}inner-tooltip{{/if}}"></span></div>',
+        expectedTemplate: '<div title="{{titleIfHelper2 hasTooltip tooltip}}"><span title="{{titleIfHelper hasInnerTooltip}}"></span></div>',
+        expectedHelpers: [
+          `const titleIfHelper = hasInnerTooltip => hasInnerTooltip ? "inner-tooltip" : "";`,
+          `const titleIfHelper2 = (hasTooltip, tooltip) => hasTooltip ? tooltip : undefined;`
+        ]
+      }
+    ].forEach(({ template, expectedTemplate, expectedHelpers }) => {
+      test('should use unique name when multiple helpers exist for same attribute type', () => {
         const { template: templateResult, helpers: helpersResult } = preProcessUnsupportedParserFeatures(template);
         const renderedHelpers = generate(program(helpersResult)).code.split('\n').filter((result) => result);
 
