@@ -20,7 +20,11 @@ export const resolveStatement = (statement: Glimmer.Statement) => {
     }
 
     case 'MustacheStatement': {
-      return resolveExpression(statement.path)
+      if (statement.params.length > 0) {
+        return resolveHelper(statement);
+      } else {
+        return resolveExpression(statement.path);
+      }      
     }
 
     case 'BlockStatement': {
@@ -79,7 +83,7 @@ export const resolveExpression = (
 ): Babel.Literal | Babel.Identifier | Babel.MemberExpression => {
   switch (expression.type) {
     case 'PathExpression': {
-      return createPath(expression)
+            return createPath(expression)
     }
 
     case 'BooleanLiteral': {
@@ -108,6 +112,16 @@ export const resolveExpression = (
   }
 }
 
+
+/**
+ * Converts Hbs helper to Babel function call
+ */
+export const resolveHelper = (
+  expression: Glimmer.MustacheStatement
+): Babel.CallExpression => {
+  return Babel.callExpression(Babel.identifier(expression.path.original?.toString() ?? 'undefined'), expression.params.map(resolveExpression))
+}
+
 /**
  * Returns path to variable
  */
@@ -125,7 +139,7 @@ export const createPath = (pathExpression: Glimmer.PathExpression): Babel.Identi
     acc = appendToPath(acc, Babel.identifier(parts[i]))
   }
 
-  return acc
+    return acc
 }
 
 /**
