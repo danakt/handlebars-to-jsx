@@ -5,7 +5,8 @@
     "lib": ["es7"],
     "strict": true,
     "outDir": "./dist/",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "skipLibCheck": true
   },
   "exclude": ["./tests"]
 }
